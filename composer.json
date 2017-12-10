@@ -1,0 +1,27 @@
+{
+    "name": "dazet/data-map",
+    "description": "Library for mapping data structures.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Damian Zaprzałek",
+            "email": "sz.p.damian@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1"
+    },
+    "require-dev": {
+        "phpspec/phpspec": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DataMap\\": "src/",
+            "spec\\DataMap\\": "spec/"
+        }
+    },
+    "config": {
+        "bin-dir": "bin"
+    }
+}

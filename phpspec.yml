@@ -1,0 +1,5 @@
+suites:
+    src:
+        namespace: DataMap
+        psr4_prefix: DataMap
+        src_path: 'src'
