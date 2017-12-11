@@ -17,7 +17,11 @@
     },
     "autoload": {
         "psr-4": {
-            "DataMap\\": "src/",
+            "DataMap\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
             "spec\\DataMap\\": "spec/"
         }
     },
