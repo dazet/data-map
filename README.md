@@ -13,24 +13,56 @@ use DataMap\Getter\GetInteger;
 use DataMap\Mapper;
 use DataMap\Input\Input;
 
-$expectedInput = [
-    'key_1' => 'key_1 value',
-    'key_2' => 'key_2 value',
-    'key_3' => 'key_3 value',
-    'nested' => [
-        'key' => 'nested.key value'
+// Input structure is:
+$input = [
+    'name' => 'John',
+    'surname' => 'Doe',
+    'date_birth' => '1970-01-01',
+    'address' => [
+        'street' => 'Foo Street',
+        'city' => [
+            'name' => 'Bar Town',
+            'country' => 'Neverland',
+        ],
     ],
-    'integer' => '123',
+    'age' => '47',
 ];
 
+// Required output structore is:
+$output = [
+    'firstName' => 'John',
+    'fullName' => 'John Doe',
+    'street' => 'Foo Street',
+    'city' => 'Bar Town',
+    'age' => 47,
+    'birth' => new \DateTimeImmutable('1970-01-01'),
+];
+
+// Then mapping definition is:
 $mapper = new Mapper([
-    'simple' => 'key_1',
-    'recursive' => 'nested.key',
-    'custom' => function (Input $input) {
-        return $input->get('key_2') . $input->get('key_3');
+    // simply get `name` from input and assign to `firstName` key
+    'firstName' => 'name',
+    // join name with surname and assign to `fullName`
+    'fullName' => function (Input $input): string {
+        return $input->get('name') . ' ' . $input->get('surname');
     },
-    'builtin_cast' => new GetInteger('integer'), 
+    // get street and city name from nested structure
+    'street' => 'address.street',
+    'city' => 'address.city.name',
+    // get `age` from input, cast to integer and assign to `age`
+    'age' => new GetInteger('age'),
+    // get date as `\DateTimeImmutable` object
+    'birth' => new GetDate('date_birth'),
 ]);
+
+// You can map $input to $output:
+$output = $mapper->map($input);
+
+// You can map collection of entries:
+$outputCollection = array_map($mapper, $inputCollection);
+
+// You can extend mapper definition:
+$extendedMapper = $mapper->withAddedMap(['country' => 'address.city.country']);
 
 ```
 `Key` defines property name of output structure.
