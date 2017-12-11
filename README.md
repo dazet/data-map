@@ -146,8 +146,7 @@ $user = $responseMapper->map($response);
 
 // array (
 //     'id' => 'abc-123',	
-//     'name' => 'John',	
-//     'age' => 18,	
+//     'name' => 'John',
 // )
 ``` 
 
