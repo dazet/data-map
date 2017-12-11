@@ -2,6 +2,8 @@
 
 Library for mapping data structures.
 
+[![Build Status](https://travis-ci.org/dazet/data-map.svg?branch=master)](https://travis-ci.org/dazet/data-map)
+
 ## Defining mapper
 
 `Mapper` configuration is defined as associative array `[Key => Getter, ...]` describing required output structure.
