@@ -10,7 +10,9 @@
         }
     ],
     "require": {
-        "php": ">=7.1"
+        "php": ">=7.1",
+        "ext-json": "*",
+        "ext-ctype": "*"
     },
     "require-dev": {
         "phpspec/phpspec": "^4.0",

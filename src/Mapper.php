@@ -3,7 +3,7 @@
 namespace DataMap;
 
 use DataMap\Getter\GetterMap;
-use DataMap\Input\RecursiveWrapper;
+use DataMap\Input\PipelineWrapper;
 use DataMap\Input\Wrapper;
 use DataMap\Output\ArrayFormatter;
 use DataMap\Output\Formatter;
@@ -28,13 +28,13 @@ final class Mapper
      */
     private $formatter;
 
-    /**
+    /**1
      * @param callable[]|string[] $map
      */
-    public function __construct(array $map, ?Formatter $formatter = null, ?Wrapper $wrapper = null)
+    public function __construct(iterable $map, ?Formatter $formatter = null, ?Wrapper $wrapper = null)
     {
-        $this->map = new GetterMap($map);
-        $this->wrapper = $wrapper ?? RecursiveWrapper::default();
+        $this->map = GetterMap::fromIterable($map);
+        $this->wrapper = $wrapper ?? PipelineWrapper::default();
         $this->formatter = $formatter ?? ArrayFormatter::default();
     }
 
@@ -54,9 +54,6 @@ final class Mapper
         return $this->formatter->format($output);
     }
 
-    /**
-     * @see Mapper::map
-     */
     public function __invoke($input)
     {
         return $this->map($input);
@@ -78,11 +75,16 @@ final class Mapper
         return $clone;
     }
 
-    public function withAddedMap(array $map): self
+    public function withGetters(GetterMap $getterMap): self
     {
         $clone = clone $this;
-        $clone->map = $this->map->merge(new GetterMap($map));
+        $clone->map = $this->map->merge($getterMap);
 
         return $clone;
+    }
+
+    public function withAddedMap(iterable $map): self
+    {
+        return $this->withGetters(GetterMap::fromIterable($map));
     }
 }

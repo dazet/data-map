@@ -12,11 +12,20 @@ final class GetterMap implements \IteratorAggregate
      */
     private $map = [];
 
-    public function __construct(array $map)
+    public function __construct(iterable $map)
     {
         foreach ($map as $key => $getter) {
             $this->map[$key] = $this->callableGetter($key, $getter);
         }
+    }
+
+    public static function fromIterable(iterable $map): self
+    {
+        if ($map instanceof self) {
+            return $map;
+        }
+
+        return new self($map);
     }
 
     public function getIterator(): \Traversable
@@ -39,6 +48,6 @@ final class GetterMap implements \IteratorAggregate
             return $getter;
         }
 
-        throw new FailedToInitializeMapper(sprintf('Invalid getter for key %s', $key));
+        throw new FailedToInitializeMapper(\sprintf('Invalid getter for key %s', $key));
     }
 }

@@ -482,4 +482,89 @@ final class MapperSpec extends ObjectBehavior
 
         $this->map($input)->shouldBeLike(new UserValue('c0933b83-11df-45aa-9b7e-1d2b6e4f5053', 'John Doe', 33));
     }
+
+    function it_can_transform_result_value_through_predefined_pipe_functions()
+    {
+        $data = [
+            'string_float' => '123.123',
+            'float' => 123.1234,
+            'spaced_string' => '  gimme some space     ',
+            'html_string' => '<h1>Hello world!</h1>',
+            'string_list' => 'apple,orange,banana',
+            'array_list' => ['apple', 'orange', 'banana'],
+            'true_string' => '1',
+            'true_int' => 1,
+            'false_string' => '0',
+            'false_int' => 0,
+            'date_string' => '1410-07-15 12:00',
+            'json_string' => '{"message": "Hello world!"}',
+        ];
+
+        $this->beConstructedWith([
+            'string_to_int' => 'string_float | int',
+            'string_to_integer' => 'string_float | integer',
+            'string_to_float' => 'string_float | float',
+            'string_to_true' => 'true_string | bool',
+            'string_to_false' => 'false_string | boolean',
+            'int_to_true' => 'true_int | bool',
+            'int_to_false' => 'false_int | bool',
+            'float_round' => 'float | round',
+            'float_floor' => 'float | floor',
+            'float_ceil' => 'float | ceil',
+            'date_formatted' => 'date_string | date_format "d m Y"',
+            'trim' => 'spaced_string | trim',
+            'trim_left' => 'spaced_string | ltrim',
+            'trim_right' => 'spaced_string | rtrim',
+            'trim_and_upper' => 'spaced_string | trim | upper',
+            'trim_and_replace' => 'spaced_string | trim | replace some more',
+            'trim_and_format' => 'spaced_string | trim | format "-- %s --"',
+            'strip_html' => 'html_string | strip_tags',
+            'list_explode' => 'string_list | explode ,',
+            'list_explode_to_json' => 'string_list | explode , | json_encode',
+            'list_implode' => 'array_list | implode " / "',
+            'json_decoded' => 'json_string | json_decode',
+        ]);
+
+        $this->map($data)->shouldReturn([
+            'string_to_int' => 123,
+            'string_to_integer' => 123,
+            'string_to_float' => 123.123,
+            'string_to_true' => true,
+            'string_to_false' => false,
+            'int_to_true' => true,
+            'int_to_false' => false,
+            'float_round' => 123.0,
+            'float_floor' => 123.0,
+            'float_ceil' => 124.0,
+            'date_formatted' => '15 07 1410',
+            'trim' => 'gimme some space',
+            'trim_left' => 'gimme some space     ',
+            'trim_right' => '  gimme some space',
+            'trim_and_upper' => 'GIMME SOME SPACE',
+            'trim_and_replace' => 'gimme more space',
+            'trim_and_format' => '-- gimme some space --',
+            'strip_html' => 'Hello world!',
+            'list_explode' => \explode(',', 'apple,orange,banana'),
+            'list_explode_to_json' => \json_encode(\explode(',', 'apple,orange,banana')),
+            'list_implode' => 'apple / orange / banana',
+            'json_decoded' => ['message' => 'Hello world!'],
+        ]);
+    }
+
+    function it_can_transform_result_value_through_predefined_date_pipes()
+    {
+        $data = [
+            'date_string' => '1410-07-15 12:00',
+        ];
+
+        $this->beConstructedWith([
+            'date_object' => 'date_string | datetime',
+            'date_modified' => 'date_string | date_modify "+3 days"',
+        ]);
+
+        $this->map($data)->shouldBeLike([
+            'date_object' => new \DateTimeImmutable($data['date_string']),
+            'date_modified' => (new \DateTimeImmutable($data['date_string']))->modify('+3 days'),
+        ]);
+    }
 }

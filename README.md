@@ -6,7 +6,7 @@ Library for mapping data structures.
 
 ## Defining mapper
 
-`Mapper` configuration is defined as associative array `[Key => Getter, ...]` describing required output structure.
+`Mapper` configuration is defined as association `[Key => Getter, ...]` describing required output structure.
 
 ```php
 <?php
@@ -107,7 +107,7 @@ so you can use `nested.key` instead of `$array['nested']['key']` or `$object->ne
 
 ## Output formatting
 
-Mapping output depends on `Formatter` used by `Mapper`.
+MapperInterface output depends on `Formatter` used by `Mapper`.
 
 Built-in formatters:
 
@@ -209,8 +209,7 @@ $mapper = new Mapper(
         'name_id' => function (Input $input): string {
             return "{$input->get('name')} [{$input->get('id')}]";
         }
-    ],
-    new ObjectHydrator(UserDto::class)
+    ]
 );
 
 $result = $mapper->map($user);
@@ -221,7 +220,7 @@ $result = $mapper->map($user);
 // )
 ````
 
-### `Array` => `Object`
+### `Array` -> `Object`
 
 ```php
 <?php

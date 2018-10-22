@@ -2,6 +2,8 @@
 
 use DataMap\Output\ObjectConstructor;
 use DataMap\Output\ObjectHydrator;
+use PhpBench\Benchmark\Metadata\Annotations\Groups;
+use PhpBench\Benchmark\Metadata\Annotations\Subject;
 
 final class ObjectHydratorBench
 {
