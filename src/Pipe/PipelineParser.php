@@ -75,7 +75,9 @@ final class PipelineParser
 
     public static function default(): self
     {
-        return new self(
+        static $default;
+
+        return $default ?? $default = new self(
             \array_map(
                 function (array $pipeArgs): Pipe {
                     return new Pipe(...$pipeArgs);

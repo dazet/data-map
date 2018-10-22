@@ -6,7 +6,7 @@ Library for mapping data structures.
 
 ## Defining mapper
 
-`Mapper` configuration is defined as association `[Key => Getter, ...]` describing required output structure.
+To define a `Mapper` you need to describe output structure as association: `[Key => Getter]`.
 
 ```php
 <?php
@@ -67,9 +67,10 @@ $outputCollection = array_map($mapper, $inputCollection);
 $extendedMapper = $mapper->withAddedMap(['country' => 'address.city.country']);
 
 ```
-`Key` defines property name of output structure.
+`Key` defines property name in output structure.
 
 `Getter` is a function that generally can be described by interface:
+
 ```php
 <?php 
 
@@ -129,7 +130,7 @@ $mapper = new Mapper($map, new ObjectConstructor(SomeClass::class));
 
 // by static method:
 $mapper = new Mapper($map, new ObjectConstructor(SomeClass::class, 'method'));
-``` 
+```
 
 Tries to create new instance of object using regular constructor. Map keys are matched with constructor parameters by variable name.
 
@@ -182,7 +183,7 @@ $user = $responseMapper->map($response);
 //     'id' => 'abc-123',	
 //     'name' => 'John',
 // )
-``` 
+```
 
 ### `Object` -> `Array`
 
@@ -218,11 +219,11 @@ $result = $mapper->map($user);
 //     'name' => 'John Doe',
 //     'name_id' => 'John Doe [123]',
 // )
-````
+​````
 
 ### `Array` -> `Object`
 
-```php
+​```php
 <?php
 
 use DataMap\Getter\GetInteger;
@@ -259,3 +260,4 @@ $user = $responseMapper->map($response);
 //     'age' => 18,
 // )
 ```
+

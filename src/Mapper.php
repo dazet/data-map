@@ -28,7 +28,7 @@ final class Mapper
      */
     private $formatter;
 
-    /**1
+    /**
      * @param callable[]|string[] $map
      */
     public function __construct(iterable $map, ?Formatter $formatter = null, ?Wrapper $wrapper = null)
