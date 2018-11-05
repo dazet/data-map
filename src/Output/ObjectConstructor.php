@@ -60,12 +60,12 @@ final class ObjectConstructor implements Formatter
         $constructor = new \ReflectionMethod($class, $method);
 
         if (!$constructor->isPublic()) {
-            throw new \InvalidArgumentException(sprintf('Class method `%s`::`%s` is not public.', $class, $method));
+            throw new \InvalidArgumentException(\sprintf('Class method `%s`::`%s` is not public.', $class, $method));
         }
 
         if (!$constructor->isConstructor() && !$constructor->isStatic()) {
             throw new \InvalidArgumentException(
-                sprintf('Class factory method `%s`::`%s` is not static.', $class, $method)
+                \sprintf('Class factory method `%s`::`%s` is not valid constructor.', $class, $method)
             );
         }
 

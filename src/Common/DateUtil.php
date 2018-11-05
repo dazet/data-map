@@ -35,7 +35,7 @@ final class DateUtil
                 $format,
                 $value->format($format),
                 $value->getTimezone()
-            );
+            ) ?: null;
         }
 
         if (\strtotime((string)$value) !== false) {

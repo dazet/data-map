@@ -14,7 +14,7 @@ final class ArrayInput implements Input
      */
     public function __construct($data)
     {
-        if (!\is_array($data) && !$data instanceof \ArrayAccess) {
+        if (!\is_array($data) && !($data instanceof \ArrayAccess)) {
             throw new FailedToWrapInput('ArrayInput can only wrap array or ArrayAccess');
         }
 
@@ -31,6 +31,10 @@ final class ArrayInput implements Input
 
     public function has(string $key): bool
     {
+        if ($this->array instanceof \ArrayAccess) {
+            return $this->array->offsetExists($key);
+        }
+
         return \array_key_exists($key, $this->array);
     }
 }

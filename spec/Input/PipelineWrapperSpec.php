@@ -3,15 +3,15 @@
 namespace spec\DataMap\Input;
 
 use DataMap\Input\ArrayInput;
+use DataMap\Input\ExtensibleWrapper;
 use DataMap\Input\RecursiveWrapper;
-use DataMap\Input\Wrapper;
 use DataMap\Pipe\Pipe;
 use DataMap\Pipe\PipelineParser;
 use PhpSpec\ObjectBehavior;
 
 final class PipelineWrapperSpec extends ObjectBehavior
 {
-    function it_wraps_input_with_PipelineInput(Wrapper $innerWrapper)
+    function it_wraps_input_with_PipelineInput(ExtensibleWrapper $innerWrapper)
     {
         $this->beConstructedWith($innerWrapper);
 

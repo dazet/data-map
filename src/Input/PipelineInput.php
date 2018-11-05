@@ -2,7 +2,6 @@
 
 namespace DataMap\Input;
 
-use DataMap\Pipe\Pipeline;
 use DataMap\Pipe\PipelineParser;
 
 final class PipelineInput implements Input
@@ -12,9 +11,6 @@ final class PipelineInput implements Input
 
     /** @var PipelineParser */
     private $parser;
-
-    /** @var Pipeline[] */
-    private $parsed = [];
 
     public function __construct(Input $inner, PipelineParser $parser)
     {
@@ -27,18 +23,14 @@ final class PipelineInput implements Input
      */
     public function get(string $key, $default = null)
     {
-        $pipeline = $this->parse($key);
+        $pipeline = $this->parser->parse($key);
+        $value = $this->inner->get($pipeline->key());
 
-        return $pipeline->transform($this->inner->get($pipeline->key()));
+        return $pipeline->transform($value);
     }
 
     public function has(string $key): bool
     {
-        return $this->inner->has($this->parse($key)->key());
-    }
-
-    private function parse(string $key): Pipeline
-    {
-        return $this->parsed[$key] ?? $this->parsed[$key] = $this->parser->parse($key);
+        return $this->inner->has($this->parser->parse($key)->key());
     }
 }

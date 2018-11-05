@@ -6,10 +6,12 @@ use DataMap\Input\RecursiveWrapper;
 use DataMap\Mapper;
 use PhpBench\Benchmark\Metadata\Annotations\Groups;
 use PhpBench\Benchmark\Metadata\Annotations\OutputTimeUnit;
+use PhpBench\Benchmark\Metadata\Annotations\Revs;
 use PhpBench\Benchmark\Metadata\Annotations\Subject;
 
 /**
  * @OutputTimeUnit("milliseconds", precision=3)
+ * @Revs(1000)
  */
 final class SimpleDataWrappingBench
 {
@@ -93,6 +95,20 @@ final class SimpleDataWrappingBench
     public function recursiveWrapping100x(): void
     {
         $mapper = new Mapper(self::MAP, null, RecursiveWrapper::default());
+        $result = [];
+
+        foreach ($this->data100x as $i => $data) {
+            $result[$i] = $mapper->map($data);
+        }
+    }
+
+    /**
+     * @Subject
+     * @Groups({"wrapping 100x"})
+     */
+    public function pipedMixedWrapping100x(): void
+    {
+        $mapper = new Mapper(self::MAP, null, new PipelineWrapper(MixedWrapper::default()));
         $result = [];
 
         foreach ($this->data100x as $i => $data) {

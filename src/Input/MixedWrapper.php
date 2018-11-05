@@ -4,7 +4,7 @@ namespace DataMap\Input;
 
 use DataMap\Exception\FailedToWrapInput;
 
-final class MixedWrapper implements Wrapper
+final class MixedWrapper implements ExtensibleWrapper
 {
     /** @var Wrapper[] */
     private $wrappers = [];
@@ -44,7 +44,7 @@ final class MixedWrapper implements Wrapper
         return $this->getWrapper($data)->wrap($data);
     }
 
-    public function withWrappers(Wrapper ...$wrappers): self
+    public function withWrappers(Wrapper ...$wrappers): ExtensibleWrapper
     {
         return new self(...\array_values($this->wrappers), ...$wrappers);
     }

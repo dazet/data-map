@@ -4,10 +4,12 @@ use DataMap\Output\ObjectConstructor;
 use DataMap\Output\ObjectHydrator;
 use PhpBench\Benchmark\Metadata\Annotations\Groups;
 use PhpBench\Benchmark\Metadata\Annotations\OutputTimeUnit;
+use PhpBench\Benchmark\Metadata\Annotations\Revs;
 use PhpBench\Benchmark\Metadata\Annotations\Subject;
 
 /**
  * @OutputTimeUnit("milliseconds", precision=3)
+ * @Revs(1000)
  */
 final class ObjectHydratorBench
 {

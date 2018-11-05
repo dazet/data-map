@@ -20,17 +20,17 @@ final class AnemicClass
         $this->three = $three;
     }
 
-    public function getOne(): mixed
+    public function getOne()
     {
         return $this->one;
     }
 
-    public function getTwo(): mixed
+    public function getTwo()
     {
         return $this->two;
     }
 
-    public function getThree(): mixed
+    public function getThree()
     {
         return $this->three;
     }

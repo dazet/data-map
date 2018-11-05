@@ -2,6 +2,7 @@
 
 namespace spec\DataMap\Pipe;
 
+use DataMap\Exception\FailedToParseGetter;
 use PhpSpec\ObjectBehavior;
 use spec\DataMap\StringObject;
 
@@ -377,6 +378,25 @@ final class PipelineParserSpec extends ObjectBehavior
         $defaultIfEmpty->transform(false)->shouldReturn(null);
         $defaultIfEmpty->transform([])->shouldReturn(null);
         $defaultIfEmpty->transform(0)->shouldReturn(null);
+    }
 
+    function it_allows_any_php_function_by_default()
+    {
+        $this->beConstructedThrough('default');
+
+        $this->parse('key | string | md5')
+            ->transform('hello world')
+            ->shouldReturn(md5('hello world'));
+
+        $this->parse('key | preg_replace "/\s+/" " " $$')
+            ->transform('give    me    some    space')
+            ->shouldReturn('give me some space');
+    }
+
+    function it_does_not_allow_any_php_function_in_safe_mode()
+    {
+        $this->beConstructedThrough('safeDefault');
+
+        $this->shouldThrow(FailedToParseGetter::class)->during('parse', ['key | string | md5']);
     }
 }

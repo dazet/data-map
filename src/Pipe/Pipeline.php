@@ -2,6 +2,8 @@
 
 namespace DataMap\Pipe;
 
+use DataMap\Input\Input;
+
 final class Pipeline
 {
     /** @var string */
@@ -33,5 +35,13 @@ final class Pipeline
         }
 
         return $result;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getInput(Input $input)
+    {
+        return $this->transform($input->get($this->key));
     }
 }

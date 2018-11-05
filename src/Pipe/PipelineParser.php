@@ -63,6 +63,9 @@ final class PipelineParser
      */
     private $allowFunction;
 
+    /** @var Pipeline[] */
+    private $parsed = [];
+
     /**
      * @param Pipe[] $pipesMap array<string, Pipe> [pipe_function_name => Pipe, ...]
      */
@@ -77,43 +80,45 @@ final class PipelineParser
     {
         static $default;
 
-        return $default ?? $default = new self(
-            \array_map(
-                function (array $pipeArgs): Pipe {
-                    return new Pipe(...$pipeArgs);
-                },
-                self::DEFAULT_PIPES
-            )
-        );
+        return $default ?? $default = new self([]);
     }
 
     public static function safeDefault(): self
     {
-        $self = self::default();
-        $self->allowFunction = false;
+        static $default;
 
-        return $self;
+        return $default ?? $default = new self([], false);
     }
 
     public function parse(string $getter): Pipeline
     {
-        $pipeline = \array_map('trim', \preg_split('/[^\\\\]\|/', $getter));
+        if (isset($this->parsed[$getter])) {
+            return $this->parsed[$getter];
+        }
+
+        if (\strpos($getter, '|') === false) {
+            return $this->parsed[$getter] = new Pipeline($getter);
+        }
+
+        // split by `|` except escaped `\|`
+        $pipeline = \preg_split('/[^\\\\]\|/', $getter);
+
+        if ($pipeline === false) {
+            throw new FailedToParseGetter('Failed to split transformation pipes');
+        }
+
+        $pipeline = \array_map('\trim', $pipeline);
 
         // first element should be input key
-        $key = \array_shift($pipeline);
+        $key = (string)\array_shift($pipeline);
+
+        if ($key === '') {
+            throw new FailedToParseGetter('Input key is empty');
+        }
 
         // rest should be list of pipes definitions
-        $pipes = \array_map(
-            function (string $pipeDef): Pipe {
-                $pipeArgs = \str_getcsv(\trim($pipeDef), ' ');
-                $pipeKey = \array_shift($pipeArgs);
 
-                return $this->get($pipeKey, $this->parseArgs($pipeArgs));
-            },
-            $pipeline
-        );
-
-        return new Pipeline($key, ...$pipes);
+        return $this->parsed[$getter] = new Pipeline($key, ...$this->parsePipes($pipeline));
     }
 
     /**
@@ -129,10 +134,7 @@ final class PipelineParser
 
     public function withPipe(string $key, Pipe $pipe): self
     {
-        $copy = clone $this;
-        $copy->addPipes([$key => $pipe]);
-
-        return $copy;
+        return $this->withPipes([$key => $pipe]);
     }
 
     /**
@@ -142,13 +144,13 @@ final class PipelineParser
     {
         foreach ($map as $key => $pipe) {
             if (!$pipe instanceof Pipe) {
-                throw new \InvalidArgumentException('PipelineParser can contain only Pipe instances');
+                throw new FailedToParseGetter('PipelineParser can contain only Pipe instances');
             }
 
             $key = \trim((string)$key);
 
             if ($key === '') {
-                throw new \InvalidArgumentException('Pipe key should not be empty');
+                throw new FailedToParseGetter('Pipe key should not be empty');
             }
 
             $this->pipesMap[$key] = $pipe;
@@ -161,11 +163,17 @@ final class PipelineParser
             return $this->pipesMap[$key]->withArgs($args);
         }
 
+        if (isset(self::DEFAULT_PIPES[$key])) {
+            $this->pipesMap[$key] = new Pipe(...self::DEFAULT_PIPES[$key]);
+
+            return $this->pipesMap[$key]->withArgs($args);
+        }
+
         if ($this->allowFunction && \is_callable($key)) {
             return new Pipe($key, $args);
         }
 
-        throw new FailedToParseGetter(sprintf('Cannot resolve pipe function for %s', $key));
+        throw new FailedToParseGetter("Cannot resolve pipe function for {$key}");
     }
 
     private function parseArgs(array $args): array
@@ -175,6 +183,24 @@ final class PipelineParser
                 return self::ARG_REPLACE[$arg] ?? \strtr($arg, self::STR_REPLACE);
             },
             $args
+        );
+    }
+
+    /**
+     * @param string[] $pipeline
+     * @return Pipe[]
+     * @throws FailedToParseGetter
+     */
+    private function parsePipes(array $pipeline): array
+    {
+        return \array_map(
+            function (string $pipeDef) {
+                $pipeArgs = \str_getcsv($pipeDef, ' ');
+                $pipeKey = \array_shift($pipeArgs);
+
+                return $this->get($pipeKey, $this->parseArgs($pipeArgs));
+            },
+            $pipeline
         );
     }
 }

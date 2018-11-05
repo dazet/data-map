@@ -2,14 +2,14 @@
 
 namespace spec\DataMap\Input;
 
+use DataMap\Input\ExtensibleWrapper;
 use DataMap\Input\Input;
 use DataMap\Input\RecursiveInput;
-use DataMap\Input\Wrapper;
 use PhpSpec\ObjectBehavior;
 
 final class RecursiveWrapperSpec extends ObjectBehavior
 {
-    function it_supports_types_supported_by_inner_wrapper(Wrapper $inner)
+    function it_supports_types_supported_by_inner_wrapper(ExtensibleWrapper $inner)
     {
         $this->beConstructedWith($inner);
 
@@ -18,8 +18,10 @@ final class RecursiveWrapperSpec extends ObjectBehavior
         $this->supportedTypes()->shouldBe(['array', 'string']);
     }
 
-    function it_wraps_data_through_inner_wrapper_and_decorates_with_RecursiveInput(Wrapper $inner, Input $innerInput)
-    {
+    function it_wraps_data_through_inner_wrapper_and_decorates_with_RecursiveInput(
+        ExtensibleWrapper $inner,
+        Input $innerInput
+    ) {
         $this->beConstructedWith($inner);
 
         $data = new \stdClass();

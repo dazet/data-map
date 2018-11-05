@@ -47,14 +47,14 @@ final class ObjectHydrator implements Formatter
             return $object;
         }
 
-        $setter = 'set' . ucfirst($key);
+        $setter = 'set' . \ucfirst($key);
         if ($this->objectInfo->hasPublicMethod($setter)) {
             $object->$setter($value);
 
             return $object;
         }
 
-        $immutableSetter = 'with' . ucfirst($key);
+        $immutableSetter = 'with' . \ucfirst($key);
         if ($this->objectInfo->hasPublicMethod($immutableSetter)) {
             return $object->$immutableSetter($value);
         }
