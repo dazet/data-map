@@ -5,20 +5,20 @@ namespace DataMap\Getter;
 use DataMap\Input\Input;
 
 /**
- * Get value from input and pass it through pipe functions
+ * Get value from input and pass it through sequence of functions
  */
-final class GetPiped implements Getter
+final class GetFiltered implements Getter
 {
     /** @var string */
     private $key;
 
     /** @var callable[] */
-    private $pipes;
+    private $filters;
 
-    public function __construct(string $key, callable ...$pipes)
+    public function __construct(string $key, callable ...$filters)
     {
         $this->key = $key;
-        $this->pipes = $pipes;
+        $this->filters = $filters;
     }
 
     /**
@@ -28,8 +28,8 @@ final class GetPiped implements Getter
     {
         $value = $input->get($this->key);
 
-        foreach ($this->pipes as $pipe) {
-            $value = $pipe($value);
+        foreach ($this->filters as $filter) {
+            $value = $filter($value);
         }
 
         return $value;

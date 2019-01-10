@@ -4,14 +4,15 @@ namespace spec\DataMap\Input;
 
 use DataMap\Input\ArrayInput;
 use DataMap\Input\ExtensibleWrapper;
+use DataMap\Input\FilteredInput;
 use DataMap\Input\RecursiveWrapper;
-use DataMap\Pipe\Pipe;
-use DataMap\Pipe\PipelineParser;
+use DataMap\Filter\Filter;
+use DataMap\Filter\FilterChainParser;
 use PhpSpec\ObjectBehavior;
 
-final class PipelineWrapperSpec extends ObjectBehavior
+final class FilteredWrapperSpec extends ObjectBehavior
 {
-    function it_wraps_input_with_PipelineInput(ExtensibleWrapper $innerWrapper)
+    function it_wraps_input_with_FilteredInput(ExtensibleWrapper $innerWrapper)
     {
         $this->beConstructedWith($innerWrapper);
 
@@ -21,6 +22,7 @@ final class PipelineWrapperSpec extends ObjectBehavior
             ->willReturn(new ArrayInput($data));
 
         $input = $this->wrap($data);
+        $input->shouldHaveType(FilteredInput::class);
         $input->get('text | trim')->shouldReturn('example');
     }
 
@@ -39,11 +41,11 @@ final class PipelineWrapperSpec extends ObjectBehavior
         $this->wrap($data)->get('nested.content.value | trim')->shouldReturn('example');
     }
 
-    function it_can_be_created_with_custom_pipeline_parser()
+    function it_can_be_created_with_custom_filter_chain_parser()
     {
         $this->beConstructedWith(
             RecursiveWrapper::default(),
-            new PipelineParser(['trim' => new Pipe('trim'), 'backward' => new Pipe('strrev')], false)
+            new FilterChainParser(['trim' => new Filter('trim'), 'backward' => new Filter('strrev')], false)
         );
 
         $data = ['nested' => ['value' => ' example ']];

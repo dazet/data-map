@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use DataMap\Input\MixedWrapper;
-use DataMap\Input\PipelineWrapper;
+use DataMap\Input\FilteredWrapper;
 use DataMap\Input\RecursiveWrapper;
 use PhpBench\Benchmark\Metadata\Annotations\Groups;
 use PhpBench\Benchmark\Metadata\Annotations\OutputTimeUnit;
@@ -38,6 +38,6 @@ final class WrappersBench
      */
     public function pipelineWrappedConstruct(): void
     {
-        PipelineWrapper::default();
+        FilteredWrapper::default();
     }
 }

@@ -3,14 +3,14 @@
 namespace spec\DataMap\Input;
 
 use DataMap\Input\Input;
-use DataMap\Pipe\PipelineParser;
+use DataMap\Filter\FilterChainParser;
 use PhpSpec\ObjectBehavior;
 
-final class PipelineInputSpec extends ObjectBehavior
+final class FilteredInputSpec extends ObjectBehavior
 {
-    function it_wraps_input_and_transforms_output_through_defined_pipeline(Input $input)
+    function it_wraps_input_and_transforms_output_through_defined_filter_chain(Input $input)
     {
-        $this->beConstructedWith($input, PipelineParser::default());
+        $this->beConstructedWith($input, FilterChainParser::default());
 
         $input->has('data.path')->willReturn(true);
         $input->get('data.path')->shouldBeCalled()->willReturn('one two three');

@@ -483,7 +483,7 @@ final class MapperSpec extends ObjectBehavior
         $this->map($input)->shouldBeLike(new UserValue('c0933b83-11df-45aa-9b7e-1d2b6e4f5053', 'John Doe', 33));
     }
 
-    function it_can_transform_result_value_through_predefined_pipe_functions()
+    function it_can_transform_result_value_through_predefined_filter_functions()
     {
         $data = [
             'string_float' => '123.123',
@@ -551,7 +551,7 @@ final class MapperSpec extends ObjectBehavior
         ]);
     }
 
-    function it_can_transform_result_value_through_predefined_date_pipes()
+    function it_can_transform_result_value_through_predefined_date_filters()
     {
         $data = [
             'date_string' => '1410-07-15 12:00',

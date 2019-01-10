@@ -3,7 +3,7 @@
 namespace DataMap;
 
 use DataMap\Getter\GetterMap;
-use DataMap\Input\PipelineWrapper;
+use DataMap\Input\FilteredWrapper;
 use DataMap\Input\Wrapper;
 use DataMap\Output\ArrayFormatter;
 use DataMap\Output\Formatter;
@@ -34,7 +34,7 @@ final class Mapper
     public function __construct(iterable $map, ?Formatter $formatter = null, ?Wrapper $wrapper = null)
     {
         $this->map = GetterMap::fromIterable($map);
-        $this->wrapper = $wrapper ?? PipelineWrapper::default();
+        $this->wrapper = $wrapper ?? FilteredWrapper::default();
         $this->formatter = $formatter ?? ArrayFormatter::default();
     }
 

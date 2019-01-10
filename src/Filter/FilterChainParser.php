@@ -1,18 +1,18 @@
 <?php
 
-namespace DataMap\Pipe;
+namespace DataMap\Filter;
 
 use DataMap\Exception\FailedToParseGetter;
 
 /**
- * Parse getter configured as a pipeline of functions (pipes).
+ * Parse FilterChain from string.
  * Example: `input.key | string | trim | strip_tags`
  */
-final class PipelineParser
+final class FilterChainParser
 {
     /** @var callable[][] */
-    public const DEFAULT_PIPES = [
-        // key => [Pipe callback, [Pipe constructor args]]
+    public const DEFAULT_FILTERS = [
+        // key => [Filter callback, [Filter constructor args]]
         // types
         'string' => ['DataMap\Common\StringUtil::toStringOrNull'],
         'int' => ['DataMap\Common\NumberUtil::toIntOrNull'],
@@ -53,27 +53,27 @@ final class PipelineParser
     public const ARG_REPLACE = [':null' => null, ':false' => false, ':true' => true, ':[]' => []];
     public const STR_REPLACE = ['\\|' => '|'];
 
-    /** @var Pipe[] array<string, Pipe> [pipe_function_name => Pipe, ...] */
-    private $pipesMap;
+    /** @var Filter[] array<string, Filter> [filter_function_name => Filter, ...] */
+    private $filterMap;
 
     /**
-     * Allow any PHP function (or other callable passed as string) when pipe function name is not defined.
-     * In safe mode you will not be able to use `key | strval | trim` unless you strictly define these pipe functions.
+     * Allow any PHP function (or other callable passed as string) when filter function name is not defined.
+     * In safe mode you will not be able to use `key | strval | trim` unless you strictly define these filter functions.
      * @var bool
      */
     private $allowFunction;
 
-    /** @var Pipeline[] */
+    /** @var FilterChain[] */
     private $parsed = [];
 
     /**
-     * @param Pipe[] $pipesMap array<string, Pipe> [pipe_function_name => Pipe, ...]
+     * @param Filter[] $filterMap array<string, Filter> [filter_function_name => Filter, ...]
      */
-    public function __construct(array $pipesMap, bool $allowFunction = true)
+    public function __construct(array $filterMap, bool $allowFunction = true)
     {
-        $this->pipesMap = [];
+        $this->filterMap = [];
         $this->allowFunction = $allowFunction;
-        $this->addPipes($pipesMap);
+        $this->addFilters($filterMap);
     }
 
     public static function default(): self
@@ -90,90 +90,90 @@ final class PipelineParser
         return $default ?? $default = new self([], false);
     }
 
-    public function parse(string $getter): Pipeline
+    public function parse(string $getter): FilterChain
     {
         if (isset($this->parsed[$getter])) {
             return $this->parsed[$getter];
         }
 
         if (\strpos($getter, '|') === false) {
-            return $this->parsed[$getter] = new Pipeline($getter);
+            return $this->parsed[$getter] = new FilterChain($getter);
         }
 
         // split by `|` except escaped `\|`
-        $pipeline = \preg_split('/[^\\\\]\|/', $getter);
+        $chain = \preg_split('/[^\\\\]\|/', $getter);
 
-        if ($pipeline === false) {
-            throw new FailedToParseGetter('Failed to split transformation pipes');
+        if ($chain === false) {
+            throw new FailedToParseGetter('Failed to split transformation filters');
         }
 
-        $pipeline = \array_map('\trim', $pipeline);
+        $chain = \array_map('\trim', $chain);
 
         // first element should be input key
-        $key = (string)\array_shift($pipeline);
+        $key = (string)\array_shift($chain);
 
         if ($key === '') {
             throw new FailedToParseGetter('Input key is empty');
         }
 
-        // rest should be list of pipes definitions
+        // rest should be list of filter definitions
 
-        return $this->parsed[$getter] = new Pipeline($key, ...$this->parsePipes($pipeline));
+        return $this->parsed[$getter] = new FilterChain($key, ...$this->parseFilters($chain));
     }
 
     /**
-     * @param Pipe[] $pipes
+     * @param Filter[] $filters
      */
-    public function withPipes(array $pipes): self
+    public function withFilters(array $filters): self
     {
         $copy = clone $this;
-        $copy->addPipes($pipes);
+        $copy->addFilters($filters);
 
         return $copy;
     }
 
-    public function withPipe(string $key, Pipe $pipe): self
+    public function withFilter(string $key, Filter $filter): self
     {
-        return $this->withPipes([$key => $pipe]);
+        return $this->withFilters([$key => $filter]);
     }
 
     /**
-     * @param Pipe[] $map array<string, Pipe>
+     * @param Filter[] $map array<string, Filter>
      */
-    private function addPipes(array $map): void
+    private function addFilters(array $map): void
     {
-        foreach ($map as $key => $pipe) {
-            if (!$pipe instanceof Pipe) {
-                throw new FailedToParseGetter('PipelineParser can contain only Pipe instances');
+        foreach ($map as $key => $filter) {
+            if (!$filter instanceof Filter) {
+                throw new FailedToParseGetter('FilterChainParser can contain only Filter instances');
             }
 
             $key = \trim((string)$key);
 
             if ($key === '') {
-                throw new FailedToParseGetter('Pipe key should not be empty');
+                throw new FailedToParseGetter('Filter key should not be empty');
             }
 
-            $this->pipesMap[$key] = $pipe;
+            $this->filterMap[$key] = $filter;
         }
     }
 
-    private function get(string $key, array $args = []): Pipe
+    private function get(string $key, array $args = []): Filter
     {
-        if (isset($this->pipesMap[$key])) {
-            return $this->pipesMap[$key]->withArgs($args);
+        if (isset($this->filterMap[$key])) {
+            return $this->filterMap[$key]->withArgs($args);
         }
 
-        if (isset(self::DEFAULT_PIPES[$key])) {
-            $this->pipesMap[$key] = new Pipe(...self::DEFAULT_PIPES[$key]);
+        if (isset(self::DEFAULT_FILTERS[$key])) {
+            $this->filterMap[$key] = new Filter(...self::DEFAULT_FILTERS[$key]);
 
-            return $this->pipesMap[$key]->withArgs($args);
+            return $this->filterMap[$key]->withArgs($args);
         }
 
         if ($this->allowFunction && \is_callable($key)) {
-            return new Pipe($key, $args);
+            return new Filter($key, $args);
         }
 
-        throw new FailedToParseGetter("Cannot resolve pipe function for {$key}");
+        throw new FailedToParseGetter("Cannot resolve filter function for {$key}");
     }
 
     private function parseArgs(array $args): array
@@ -187,20 +187,20 @@ final class PipelineParser
     }
 
     /**
-     * @param string[] $pipeline
-     * @return Pipe[]
+     * @param string[] $chain
+     * @return Filter[]
      * @throws FailedToParseGetter
      */
-    private function parsePipes(array $pipeline): array
+    private function parseFilters(array $chain): array
     {
         return \array_map(
-            function (string $pipeDef) {
-                $pipeArgs = \str_getcsv($pipeDef, ' ');
-                $pipeKey = \array_shift($pipeArgs);
+            function (string $filterDef) {
+                $filterArgs = \str_getcsv($filterDef, ' ');
+                $filterKey = \array_shift($filterArgs);
 
-                return $this->get($pipeKey, $this->parseArgs($pipeArgs));
+                return $this->get($filterKey, $this->parseArgs($filterArgs));
             },
-            $pipeline
+            $chain
         );
     }
 }

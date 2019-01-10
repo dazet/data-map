@@ -106,13 +106,13 @@ There are 2 forms of defining map:
 * `new GetMappedFlatCollection($key, $callback)` - similar to `GetMappedCollection` but result is flattened.
 * `new GetTranslated($key, $map, $default)` - gets value and translates it using provided associative array (`$map`) or `$default` when translation for value is not available.
 
-## Costomizing or extending
+## Customizing or extending
 
 `Mapper` consists of 3 components:
 
-* getter map
-* input wrapper that allows to wrap input with proper `Input` implementation
-* output formatter that formats result as array or object of some class.
+* `GetterMap` that describes mapping
+* `InputWrapper` that allows to wraps input structure with proper `Input` implementation
+* output `Formatter` that formats result as array or object of some class.
 
 ```php
 <?php
@@ -120,11 +120,12 @@ There are 2 forms of defining map:
 $getterMap = [...];
 
 $mapper = new Mapper($getterMap);
+
 // which is equivalent of:
 $mapper = new Mapper(
     $getterMap, 
     ArrayFormatter::default(), 
-    PipelineWrapper::default()
+    FilteredWrapper::default()
 );
 ```
 
@@ -138,7 +139,7 @@ Ways to customize `Mapper`:
   $mapper = new Mapper(
       $getterMap, 
       null, 
-      PipelineWrapper::default()->withWrappers($myWrapper)
+      FilteredWrapper::default()->withWrappers($myWrapper)
   );
   ```
 
@@ -152,14 +153,14 @@ Ways to customize `Mapper`:
   );
   ```
 
-* add custom transformation pipe (see `PipelineInput`)
+* add custom transformation filter (see `FilteredInput`)
 
   ```php
   $mapper = new Mapper(
       $getterMap, 
       null, 
-      PipelineWrapper::default()->withPipes([
-          'replace' => new Pipe('preg_replace', ['//', '', '$$'])
+      FilteredWrapper::default()->withFilters([
+          'replace' => new Filter('preg_replace', ['//', '', '$$'])
       ])
   );
   ```
@@ -254,31 +255,31 @@ $input->has('one.nested'); // true
 $input->has('one.other'); // false
 ```
 
-#### `PipelineInput`
+#### `FilteredInput`
 
-`PipelineInput` allows to transform input value using defined transformation pipeline.
+`FilteredInput` allows to transform input value using defined filter chain.
 
 ```php
 <?php
 
 $innerInput = new ArrayInput([
-    'integer' => 123,
-    'string' => '  string  ',
-    'float' => 123.1234,
+    'amount' => 123,
+    'description' => '  string  ',
+    'price' => 123.1234,
 ]);
 
-$input = new PipelineInput($innerInput, PipelineParser::default());
+$input = new FilteredInput($innerInput, FilterChainParser::default());
 
-$input->get('integer | string'); // '123'
-$input->get('string | trim | upper'); // 'STRING'
-$input->get('string | integer'); // null
-$input->get('float | round'); // 123.0
-$input->get('string | round'); // null
-$input->get('float | round 2'); // 123.12
-$input->get('float | ceil | integer'); // 124
+$input->get('amount | string'); // '123'
+$input->get('description | trim | upper'); // 'STRING'
+$input->get('description | integer'); // null
+$input->get('price | round'); // 123.0
+$input->get('description | round'); // null
+$input->get('price | round 2'); // 123.12
+$input->get('price | ceil | integer'); // 124
 ```
 
-##### Default transformation pipes
+##### Default filters
 
 * `string`: cast value to string if possible or return null
 
@@ -347,7 +348,7 @@ $input->get('float | ceil | integer'); // 124
 
 ##### Function as transformation
 
-Default configuration of `PipelineParser` allows use any PHP function as transformation. By default mapped value is passed as first argument to that function optionally followed by other arguments defined in pipe config. It is also possible to define different argument position of mapped value using `$$` as a placeholder.
+Default configuration of `FilterChainParser` allows use any PHP function as transformation. By default mapped value is passed as first argument to that function optionally followed by other arguments defined in filter config. It is also possible to define different argument position of mapped value using `$$` as a placeholder.
 
 ###### Examples:
 
@@ -355,8 +356,7 @@ Default configuration of `PipelineParser` allows use any PHP function as transfo
 * wrap string after 20 characters: `key | string | wordwrap 20`
 * custom argument position of mapped value `key | string | preg_replace "/\s+/" " " $$`
 
-##### Defining custom transformation pipes
-
+##### Defining custom filters
 
 
 ## Output formatting
@@ -462,8 +462,8 @@ $result = $mapper->map($user);
 //     'name' => 'John Doe',
 //     'name_id' => 'John Doe [123]',
 // )
-​````
-
+```
+ 
 ### `Array` -> `Object`
 
 ​```php
@@ -503,4 +503,3 @@ $user = $responseMapper->map($response);
 //     'age' => 18,
 // )
 ```
-

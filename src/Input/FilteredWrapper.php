@@ -3,21 +3,21 @@
 namespace DataMap\Input;
 
 use DataMap\Exception\FailedToWrapInput;
-use DataMap\Pipe\Pipe;
-use DataMap\Pipe\PipelineParser;
+use DataMap\Filter\Filter;
+use DataMap\Filter\FilterChainParser;
 
-final class PipelineWrapper implements ExtensibleWrapper
+final class FilteredWrapper implements ExtensibleWrapper
 {
     /** @var ExtensibleWrapper */
     private $inner;
 
-    /** @var PipelineParser */
+    /** @var FilterChainParser */
     private $parser;
 
-    public function __construct(Wrapper $inner, ?PipelineParser $parser = null)
+    public function __construct(Wrapper $inner, ?FilterChainParser $parser = null)
     {
         $this->inner = $inner instanceof ExtensibleWrapper ? $inner : new MixedWrapper($inner);
-        $this->parser = $parser ?? PipelineParser::default();
+        $this->parser = $parser ?? FilterChainParser::default();
     }
 
     public static function default(): self
@@ -36,7 +36,7 @@ final class PipelineWrapper implements ExtensibleWrapper
      */
     public function wrap($data): Input
     {
-        return new PipelineInput($this->inner->wrap($data), $this->parser);
+        return new FilteredInput($this->inner->wrap($data), $this->parser);
     }
 
     public function withWrappers(Wrapper ...$wrappers): ExtensibleWrapper
@@ -48,12 +48,12 @@ final class PipelineWrapper implements ExtensibleWrapper
     }
 
     /**
-     * @param Pipe[] $pipes
+     * @param Filter[] $filters
      */
-    public function withPipes(array $pipes): self
+    public function withFilters(array $filters): self
     {
         $clone = clone $this;
-        $clone->parser = $this->parser->withPipes($pipes);
+        $clone->parser = $this->parser->withFilters($filters);
 
         return $clone;
     }

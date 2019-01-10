@@ -1,13 +1,13 @@
 <?php
 
-namespace DataMap\Pipe;
+namespace DataMap\Filter;
 
 /**
- * Pipe is a callback that takes only 1 argument.
+ * Filter is a function that takes only 1 argument and can be chained with other filters.
  * It encapsulates other function with some predefined arguments and 1 variable argument.
  * Variable argument position can be declared by string `$$` in `$args`.
  */
-final class Pipe
+final class Filter
 {
     /** Variable placeholder within `$args` */
     public const VARIABLE = '$$';
@@ -55,8 +55,10 @@ final class Pipe
     {
         return new self(
             $this->callback,
+            // replace overridden arguments
             \array_replace(
                 $this->args,
+                // do not override variable argument and inherited arguments
                 \array_filter(
                     $this->guessVariableArg($args),
                     function ($arg): bool {
@@ -72,6 +74,7 @@ final class Pipe
     {
         $args = \array_values($args);
         if (!\in_array(self::VARIABLE, $args, true)) {
+            // variable argument at first position by default
             \array_unshift($args, self::VARIABLE);
         }
 
@@ -81,17 +84,19 @@ final class Pipe
     private function guessVariableArg(array $args): array
     {
         if (\in_array(self::VARIABLE, $args, true)) {
+            // filtered value argument position already defined
             return $args;
         }
 
         if ($this->varPosition === 0) {
-            // pipe argument first
+            // use filtered value as first argument
             \array_unshift($args, self::VARIABLE);
 
             return $args;
         }
 
         if (!\array_key_exists($this->varPosition, $args)) {
+            // insert variable argument into predefined position
             $args[$this->varPosition] = self::VARIABLE;
 
             return $args;
@@ -99,7 +104,7 @@ final class Pipe
 
         throw new \InvalidArgumentException(
             \sprintf(
-                'Unable resolve variable argument. Pipe args: %s, other args: %s',
+                'Unable resolve variable argument. Filter args: %s, other args: %s',
                 \json_encode($this->args),
                 \json_encode($args)
             )

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use DataMap\Input\MixedWrapper;
-use DataMap\Input\PipelineWrapper;
+use DataMap\Input\FilteredWrapper;
 use DataMap\Input\RecursiveWrapper;
 use DataMap\Mapper;
 use PhpBench\Benchmark\Metadata\Annotations\Groups;
@@ -70,7 +70,7 @@ final class SimpleDataWrappingBench
      */
     public function pipedRecursiveWrapping(): void
     {
-        $mapper = new Mapper(self::MAP, null, PipelineWrapper::default());
+        $mapper = new Mapper(self::MAP, null, FilteredWrapper::default());
         $mapper->map($this->data);
     }
 
@@ -108,7 +108,7 @@ final class SimpleDataWrappingBench
      */
     public function pipedMixedWrapping100x(): void
     {
-        $mapper = new Mapper(self::MAP, null, new PipelineWrapper(MixedWrapper::default()));
+        $mapper = new Mapper(self::MAP, null, new FilteredWrapper(MixedWrapper::default()));
         $result = [];
 
         foreach ($this->data100x as $i => $data) {
@@ -122,7 +122,7 @@ final class SimpleDataWrappingBench
      */
     public function pipedRecursiveWrapping100x(): void
     {
-        $mapper = new Mapper(self::MAP, null, PipelineWrapper::default());
+        $mapper = new Mapper(self::MAP, null, FilteredWrapper::default());
         $result = [];
 
         foreach ($this->data100x as $i => $data) {

@@ -1,11 +1,11 @@
 <?php
 
-namespace spec\DataMap\Pipe;
+namespace spec\DataMap\Filter;
 
 use PhpSpec\ObjectBehavior;
 use spec\DataMap\Stub\DummyCallable;
 
-final class PipeSpec extends ObjectBehavior
+final class FilterSpec extends ObjectBehavior
 {
     function it_can_be_a_function_that_takes_1_argument()
     {
@@ -24,7 +24,7 @@ final class PipeSpec extends ObjectBehavior
         $this('value')->shouldReturn('result');
     }
 
-    function it_can_have_predefined_arguments_and_pipe_argument_is_first_by_default()
+    function it_can_have_predefined_arguments_and_filter_argument_is_first_by_default()
     {
         $this->beConstructedWith('trim', ['.']);
 
@@ -41,7 +41,7 @@ final class PipeSpec extends ObjectBehavior
         $this('value')->shouldReturn('result');
     }
 
-    function it_can_have_predefined_arguments_and_custom_pipe_argument_position()
+    function it_can_have_predefined_arguments_and_custom_filter_argument_position()
     {
         $this->beConstructedWith('str_replace', ['X', 'Y', '$$']);
 
@@ -52,10 +52,10 @@ final class PipeSpec extends ObjectBehavior
     {
         $this->beConstructedWith($callable, ['X', '$$', 'Y']);
 
-        $copiedPipe = $this->withArgs(['_', '$$', 'Z']);
-        $copiedPipe->shouldNotBeLike($this);
+        $copiedFilter = $this->withArgs(['_', '$$', 'Z']);
+        $copiedFilter->shouldNotBeLike($this);
 
         $callable->__invoke('X', 'value', 'Z')->shouldBeCalled()->willReturn('result');
-        $copiedPipe('value')->shouldReturn('result');
+        $copiedFilter('value')->shouldReturn('result');
     }
 }

@@ -2,17 +2,17 @@
 
 namespace DataMap\Input;
 
-use DataMap\Pipe\PipelineParser;
+use DataMap\Filter\FilterChainParser;
 
-final class PipelineInput implements Input
+final class FilteredInput implements Input
 {
     /** @var Input */
     private $inner;
 
-    /** @var PipelineParser */
+    /** @var FilterChainParser */
     private $parser;
 
-    public function __construct(Input $inner, PipelineParser $parser)
+    public function __construct(Input $inner, FilterChainParser $parser)
     {
         $this->inner = $inner;
         $this->parser = $parser;
@@ -23,10 +23,10 @@ final class PipelineInput implements Input
      */
     public function get(string $key, $default = null)
     {
-        $pipeline = $this->parser->parse($key);
-        $value = $this->inner->get($pipeline->key());
+        $filter = $this->parser->parse($key);
+        $value = $this->inner->get($filter->key());
 
-        return $pipeline->transform($value);
+        return $filter->filter($value);
     }
 
     public function has(string $key): bool
