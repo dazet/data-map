@@ -4,15 +4,26 @@ namespace DataMap\Common;
 
 final class VariableUtil
 {
-    private function __construct()
-    {
-    }
+    /** @var callable */
+    public const ifEmpty = [self::class, 'ifEmpty'];
+    /** @var callable */
+    public const ifNull = [self::class, 'ifNull'];
 
+    /**
+     * @param mixed $value
+     * @param mixed $default
+     * @return mixed
+     */
     public static function ifEmpty($value, $default)
     {
         return empty($value) ? $default : $value;
     }
 
+    /**
+     * @param mixed $value
+     * @param mixed $default
+     * @return mixed
+     */
     public static function ifNull($value, $default)
     {
         return $value ?? $default;

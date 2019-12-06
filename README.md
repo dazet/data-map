@@ -6,15 +6,13 @@ Library for mapping and transforming data structures.
 
 ## Defining mapper
 
-`Mapper` configuration is defined as associative array `[Key => Getter, ...]` describing output structure.
+`Mapper` configuration is defined as association `[Key1 => Getter1, Key2 => Getter2 ...]` describing output structure.
 
-`Key` defines property name and `Getter` is a function that extracts from input value for that property.
+`Key` defines property name in output structure and `Getter` is a function that extracts value from input.
 
-#### Examples
+##### Examples
 
 ```php
-<?php
-
 use DataMap\Getter\GetInteger;
 use DataMap\Mapper;
 use DataMap\Input\Input;
@@ -46,36 +44,29 @@ $output = [
 
 // Then mapping definition is:
 $mapper = new Mapper([
-    // simply get `name` from input and assign to `firstName` property
-    'firstName' => 'name',
-    // join name with surname and assign to `fullName`
+    'firstName' => 'name',                          // simply get `name` from input and assign to `firstName` property
     'fullName' => function (Input $input): string {
         return $input->get('name') . ' ' . $input->get('surname');
-    },
-    // get street and city name from nested structure
-    'street' => 'address.street',
+    },                                              // use Closure as Getter function
+    'street' => 'address.street',                   // get values from nested structures
     'city' => 'address.city.name',
-    // get `age` from input, cast to integer and assign to `age`
-    'age' => new GetInteger('age'),
-    // get date as `\DateTimeImmutable` object
-    'birth' => new GetDate('date_birth'),
+    'age' => new GetInteger('age'),                 // use one of predefined getters
+    'birth' => new GetDate('date_birth'),           // get date as `\DateTimeImmutable` object
 ]);
 
-// You can map $input to $output:
+// Map $input to $output:
 $output = $mapper->map($input);
 
-// You can map collection of entries:
+// Map collection of entries:
 $outputCollection = array_map($mapper, $inputCollection);
 
-// You can extend mapper definition:
-$extendedMapper = $mapper->withAddedMap(['country' => 'address.city.country']);
-
+// Extend mapper definition:
+$newMapper = $mapper->withAddedMap(['country' => 'address.city.country']);
 ```
-`Getter` can be described as an interface:
+
+`Getter` generally can be described as interface:
 
 ```php
-<?php 
-
 use DataMap\Input\Input;
 
 interface Getter
@@ -90,95 +81,185 @@ interface Getter
 There are 2 forms of defining map:
 
 * `Getter` can be string which is shorthand for `new GetRaw('key')`.
-
-* `Getter` can also be a closure or any other callable. It will receive `DataMap\Input\Input` as first argument and original input as second argument just in case it is needed. `Getter` interface is not required, it is just a hint as there are no function interfaces in PHP.
+* `Getter` can also be a closure or any other callable. It will receive `DataMap\Input\Input` as first argument and original input as second argument. 
+  `Getter` interface is not required, it's just a hint.
 
 ## Predefined Getters
 
-* `new GetRaw($key, $default)` - gets value as it is. 
-* `new GetString($key, $default)` - gets value and casts to string (if possible) or `$default`. 
-* `new GetInteger($key, $default)` - gets value and casts to integer (if possible) or `$default`. 
-* `new GetFloat($key, $default)` - gets value and casts to float (if possible) or `$default`. 
-* `new GetBoolean($key, $default)` - gets value and casts to boolean (`true`, `false`, `0`, `1`, `'0'`, `'1'`) or `$default`. 
-* `new GetDate($key, $default)` - gets value and transform to `\DateTimeImmutable` (if possible) or `$default`. 
-* `new GetJoinedStrings($glue, $key1, $key2, ...)` - gets string value for given keys an join it using `$glue`. 
-* `new GetMappedCollection($key, $callback)` - gets collection under given `$key` and maps it with `$callback` or return `[]` if entry cannot be mapped. 
-* `new GetMappedFlatCollection($key, $callback)` - similar to `GetMappedCollection` but result is flattened.
-* `new GetTranslated($key, $map, $default)` - gets value and translates it using provided associative array (`$map`) or `$default` when translation for value is not available.
+#### `new GetRaw($key, $default)`
 
-## Customizing or extending
-
-`Mapper` consists of 3 components:
-
-* `GetterMap` that describes mapping
-* `InputWrapper` that allows to wraps input structure with proper `Input` implementation
-* output `Formatter` that formats result as array or object of some class.
+Get value by property path without additional transformation.
 
 ```php
-<?php
+$mapper = new Mapper([
+    'name' => new GetRaw('first_name'),
+    // same as:  
+    'name' => 'first_name',  
+]);
+```
+#### `new GetString($key, $default)`
 
-$getterMap = [...];
+Gets value and casts to string (if possible) or returns `$default`.
 
-$mapper = new Mapper($getterMap);
-
-// which is equivalent of:
-$mapper = new Mapper(
-    $getterMap, 
-    ArrayFormatter::default(), 
-    FilteredWrapper::default()
-);
+```php
+$mapper = new Mapper([
+    'name' => new GetString('username', 'anonymous'),
+]);
 ```
 
-Ways to customize `Mapper`:
+#### `new GetInteger($key, $default)`
 
-* implement own `Input` and `InputWrapper` and extend default wrapper
+Gets value and casts to integer (if possible) or `$default`.
 
-  ```php
-  $myWrapper = new MyWrapper();
-  
-  $mapper = new Mapper(
-      $getterMap, 
-      null, 
-      FilteredWrapper::default()->withWrappers($myWrapper)
-  );
-  ```
+```php
+$mapper = new Mapper([
+    'age' => new GetInteger('user.age', null),
+]);
+```
 
-* use only `MixedWrapper` for better performance when no recursion or transormations are needed
+#### `new GetFloat($key, $default)`
 
-  ```php
-  $mapper = new Mapper(
-      $getterMap, 
-      null, 
-      MixedWrapper::default()
-  );
-  ```
+Gets value and casts to float (if possible) or `$default`. 
 
-* add custom transformation filter (see `FilteredInput`)
+#### `new GetBoolean($key, $default)`
 
-  ```php
-  $mapper = new Mapper(
-      $getterMap, 
-      null, 
-      FilteredWrapper::default()->withFilters([
-          'replace' => new Filter('preg_replace', ['//', '', '$$'])
-      ])
-  );
-  ```
+Gets value and casts to boolean (`true`, `false`, `0`, `1`, `'0'`, `'1'`) or `$default`. 
 
+#### `new GetDate($key, $default)`
+
+Gets value and transform to `\DateTimeImmutable` (if possible) or `$default`.
+ 
+#### `new GetJoinedStrings($glue, $key1, $key2, ...)`
+
+Gets string value for given keys an join it using `$glue`.
+
+```php
+$mapper = new Mapper([
+    'fullname' => new GetJoinedStrings(' ', 'user.name', 'user.surname'),
+]);
+```
+
+#### `new GetMappedCollection($key, $callback)`
+
+Gets collection under given `$key` and maps it with `$callback` or return `[]` if entry cannot be mapped.
+
+```php
+$characterMapper = new Mapper([
+    'fullname' => new GetJoinedStrings(' ', 'name', 'surname'),
+] );
+
+$movieMapper = new Mapper([
+    'movie' => 'name',
+    'characters' => new GetMappedCollection('characters', $characterMapper),
+]);
+
+$mapper->map([
+    'name' => 'Lucky Luke',
+    'characters' => [
+        ['name' => 'Lucky', 'surname' => 'Luke'],
+        ['name' => 'Joe', 'surname' => 'Dalton'],
+        ['name' => 'William', 'surname' => 'Dalton'],
+        ['name' => 'Jack', 'surname' => 'Dalton'],
+        ['name' => 'Averell', 'surname' => 'Dalton'],
+    ],
+]);
+
+// result:
+[
+   'movie' => 'Lucky Luke',
+   'characters' => [
+       ['fullname' => 'Lucky Luke'],
+       ['fullname' => 'Joe Dalton'],
+       ['fullname' => 'William Dalton'],
+       ['fullname' => 'Jack Dalton'],
+       ['fullname' => 'Averell Dalton'],
+   ],
+];
+```
+ 
+#### `new GetMappedFlatCollection($key, $callback)`
+
+Similar to `GetMappedCollection` but result is flattened.
+
+#### `new GetTranslated($key, $map, $default)`
+
+Gets value and translates it using provided associative array (`$map`) or `$default` when translation for value is not available.
+
+```php
+$mapper = new Mapper([
+    'agree' => new GetTranslated('agree', ['yes' => true, 'no' => false], false), 
+]);
+
+$mapper->map(['agree' => 'yes']) === ['agree' => true];
+$mapper->map(['agree' => 'no']) === ['agree' => false];
+$mapper->map(['agree' => 'maybe']) === ['agree' => null];
+```
+
+#### `GetFiltered::from('key')->...`
+
+Gets value and transforms it through filters pipeline.
+
+```php
+$mapper = new Mapper([
+    'text' => GetFiltered::from('html')->string()->stripTags()->trim()->ifNull('[empty]'),
+    'time' => GetFiltered::from('datetime')->dateFormat('H:i:s'),
+    'date' => GetFiltered::from('time_string')->date(),
+    'amount' => GetFiltered::from('amount_string')->float()->round(2),
+    'amount_int' => GetFiltered::from('amount_string')->round()->int()->ifNull(0),
+]);
+```
+
+Using function as filter:
+
+```php
+$greeting = function (string $name): string {
+    return "Hello {$name}!";
+};
+
+$mapper = new Mapper([
+    'greet' => GetFiltered::from('name')->string()->with($greeting),
+]);
+
+$mapper->map(['name' => 'John']); // result: ['greet' => 'Hello John!']
+```
+
+Regular filters will not be called when value becomes `null`, with exceptions of `ifNull`, `ifEmpty` and `withNullable`.
+
+Custom `null` handling filter:
+
+```php
+$requireInt = function ($value): int {
+    if (!is_int($value)) {
+        throw new InvalidArgumentException('I require int!');
+    }
+
+    return $value;
+};
+
+$mapper = new Mapper([
+    'must_be_int' => GetFiltered::from('number')->int()->withNullable($requireInt),
+]);
+
+$mapper->map(['number' => 'x']); // throws InvalidArgumentException
+$mapper->map(['number' => 1]); // returns ['required_int' => 1]
+```
 
 ## Input fetching
 
-Input data can be gathered from different structure types using same `Input` interface.
+`Input` interface defines common abstraction for fetching data from different data structures.
+Mapping can be defined without going into details about underlying data type. 
+
+It also allows to create input decorators for additional input processing, like data filtering, transformation, data traversing etc.
 
 #### `ArrayInput`
 
-Wraps associative arrays.
+Wraps associative arrays and ArrayAccess objects.
 
 ```php
-<?php
-    
-$input = new ArrayInput(['one' => 1]);
+$array = ['one' => 1];
+$input = new ArrayInput($array);
 
+$input->get('key'); // is translated to: $array['key'] ?? null
 $input->get('one'); // 1
 $input->get('two'); // null
 $input->get('two', 'default'); // 'default'
@@ -189,11 +270,15 @@ $input->has('two'); // false
 
 #### `ObjectInput`
 
-Wraps generic object and allows fetch data using object public interface: public properties or getters.
+Wraps generic object and allows fetch data using object public interface: public properties or getters (getter is a public method without parameters that returns some value).
+
+Fetch method for key `name` is resolved in the following order:
+* check for public property `name`
+* check for getter `name()`
+* check for getter `getName()`
+* check for getter `isName()`
 
 ```php
-<?php
-
 class Example
 {
     public $one = 1;
@@ -211,12 +296,13 @@ class Example
     }
 }
 
-$input = new ObjectInput(new Example());
+$object = new Example();
+$input = new ObjectInput($object);
 
-$input->get('one'); // 1
-$input->get('two'); // 2
-$input->get('three'); // 3
-$input->get('four'); // null
+$input->get('one'); // 1 (property $object->one)
+$input->get('two'); // 2 (getter $object->())
+$input->get('three'); // 3 (getter $object->getThree())
+$input->get('four'); // null (no property, no getter)
 $input->get('four', 'default'); // 'default'
 
 $input->has('one'); // true
@@ -225,13 +311,10 @@ $input->has('four'); // false
 
 #### `RecursiveInput`
 
-`RecursiveInput` allows to fetch data from nested data structures using dot notation.
-
-It decorates root element `Input`, but needs `Wrapper` to wrap nested data with proper `Input`.
+`RecursiveInput` allows to traverse trees od data using dot notation (`$input->get('root.branch.leaf')`).
+It decorates `Input` (current leaf) and requires `Wrapper` to wrap with proper `Input` next visited leafs (which can be arrays or objects).
 
 ```php
-<?php
-
 class Example
 {
     public $one = ['nested' => 'nested one'];
@@ -257,18 +340,16 @@ $input->has('one.other'); // false
 
 #### `FilteredInput`
 
-`FilteredInput` allows to transform input value using defined filter chain.
+`FilteredInput` is another `Input` decorator that allows to transform data after it is extracted from inner structure.
 
 ```php
-<?php
-
 $innerInput = new ArrayInput([
     'amount' => 123,
     'description' => '  string  ',
     'price' => 123.1234,
 ]);
 
-$input = new FilteredInput($innerInput, FilterChainParser::default());
+$input = new FilteredInput($innerInput, InputFilterParser::default());
 
 $input->get('amount | string'); // '123'
 $input->get('description | trim | upper'); // 'STRING'
@@ -282,82 +363,53 @@ $input->get('price | ceil | integer'); // 124
 ##### Default filters
 
 * `string`: cast value to string if possible or return null
-
 * `int`, `integer`: cast to integer or return null
-
 * `float`: cast to float or return null
-
 * `bool`, `boolean`: try to resolve value as boolean or return null
-
 * `array`: cast value to array if possible (from array or iterable) or return null
-
 * `explode [delimiter=","]`: explode string using delimiter
-
   e.g. 1: default explode by comma `string | explode`
-
   e.g. 2: explode by custom string `string | explode "-"`
-
 * `implode [delimiter=","]`: implode array of strings using delimiter
   e.g. 1: default implode by comma `array | implode`
-
   e.g. 2: explode by custom string `array | implode "-"`
-
 * `upper`: upper case string
-
 * `lower`: lower case string
-
 * `trim`, `ltrim`, `rtrim`: trim string
-
 * `format`: format value as string using `sprintf`
   e.g. 1: `string | format "string: %s"`
   e.g. 2: `float | format "price: $%01.2f"` transforms `12.3499` to `'price: $12.35'`
-
 * `replace [search] [replace=""]`: replace substring in string like `str_replace` function
   e.g. 1: `string | replace "remove me"` replaces `'remove me'` with empty sting
   e.g. 2: `string | replace "red" "green"` transforms `'tests are red'` to `'tests are green'`
-
 * `strip_tags`: same as `strip_tags` function
-
 * `number_format [decimals=2] [decimal_point="."] [thousands_separator=","]`: same as `number_format` function
-
 * `round [precision=0]`: same as `round` function
-
 * `floor`
-
 * `ceil`
-
 * `datetime`: try to transform value to `DateTimeImmutable` or return null
-
 * `date_format [format="Y-m-d H:i:s"]`: try to transform value to datetime and format as string or return null when value cannot be transformed
-
 * `date_modify [modifier]`: try to transform value to `DateTimeImmutable` and then transform it using modifier `$datetime->modify($modifier)`, e.g.: `date_string | date_modify "+1 day"`
-
 * `timestamp`: try to transform value to datetime and then to timestamp or return null
-
 * `json_encode`
-
 * `json_decode`
-
 * `count`: return count for array or `Countable` or null when not countable
-
 * `if_null [then]`: define default value when mapped value is null
   e.g. `maybe_string | string | if_null "default"`
-
 * `if_empty [then]`: define default value when mapped value is empty
   e.g. `maybe_string | string | if_empty "default"`
 
 ##### Function as transformation
 
-Default configuration of `FilterChainParser` allows use any PHP function as transformation. By default mapped value is passed as first argument to that function optionally followed by other arguments defined in filter config. It is also possible to define different argument position of mapped value using `$$` as a placeholder.
+Default configuration of `InputFilterParser` allows use any PHP function as transformation. 
+By default mapped value is passed as first argument to that function optionally followed by other arguments defined in filter config. 
+It is also possible to define different argument position of mapped value using `$$` as a placeholder.
 
 ###### Examples:
 
 * calculate md5 of mapped value: `key | string | md5`
 * wrap string after 20 characters: `key | string | wordwrap 20`
 * custom argument position of mapped value `key | string | preg_replace "/\s+/" " " $$`
-
-##### Defining custom filters
-
 
 ## Output formatting
 
@@ -368,7 +420,6 @@ Built-in formatters:
 #### `ArrayFormatter`
 
 ```php
-<?php
 $mapper = new Mapper($map);
 // same as:
 $mapper = new Mapper($map, new ArrayFormatter());
@@ -377,7 +428,6 @@ $mapper = new Mapper($map, new ArrayFormatter());
 #### `ObjectConstructor`
 
 ```php
-<?php
 // by class constructor:
 $mapper = new Mapper($map, new ObjectConstructor(SomeClass::class));
 
@@ -390,7 +440,6 @@ Tries to create new instance of object using regular constructor. Map keys are m
 #### `ObjectHydrator`
 
 ```php
-<?php
 // by class constructor:
 $mapper = new Mapper($map, new ObjectHydrator(new SomeClass()));
 
@@ -400,106 +449,91 @@ $mapper = new Mapper($map, new ObjectHydrator(SomeClass::class));
 
 Tries to hydrate instance of object by setting public properties values or using setters (`setSomething` or `withSomething` assuming immutability).
 
-## Examples
+## Customizing and extending
 
-### `Array` -> `Array`
+`Mapper` consists of 3 components:
+
+* `GetterMap` that describes mapping
+* `InputWrapper` that allows to wraps input structure with proper `Input` implementation
+* output `Formatter` that formats result as array or object of some class.
 
 ```php
-<?php
+$getterMap = [...];
 
-use DataMap\Mapper;
+$mapper = new Mapper($getterMap);
 
-$response = [
-    'data' => [
-        'user' => ['id' => 'abc-123', 'name' => 'John'],
-    ],
-];
-
-$responseMapper = new Mapper([
-    'id' => 'data.user.id',
-    'name' => 'data.user.name',
-]);
-
-$user = $responseMapper->map($response);
-
-// array (
-//     'id' => 'abc-123',	
-//     'name' => 'John',
-// )
+// which is equivalent of:
+$mapper = new Mapper(
+    $getterMap, 
+    ArrayFormatter::default(), 
+    FilteredWrapper::default()
+);
 ```
 
-### `Object` -> `Array`
+## Customizing `Mapper`
+
+#### Implement `Input` and `InputWrapper` to extract data from various sources
 
 ```php
-<?php
-
-use DataMap\Input\Input;
-use DataMap\Mapper;
-use DataMap\Output\ObjectHydrator;
-
-class UserDto
+interface Attributes
 {
-    public $id;
-    public $name;
+    public function getAttribute($key, $default = null);
 }
 
-$user = new UserDto();
-$user->id = '123';
-$user->name = 'John Doe';
+class AttributesInput implements Input
+{
+    /** @var Attribiutes */
+    private $attributes;
+  
+    public function get(string $key, $default = null)
+    {
+        return $this->attributes->getAttribute($key, $default);
+    }
+    // ...    
+}
+
+class AttributesWrapper implements Wrapper
+{
+    public function supportedTypes(): array
+    {
+        return [Attributes::class]
+    }
+  
+    public function wrap($data): Input
+    {
+        return new AttributesInput($data);
+    }
+}
 
 $mapper = new Mapper(
-    [
-        'name' => 'name',
-        'name_id' => function (Input $input): string {
-            return "{$input->get('name')} [{$input->get('id')}]";
-        }
-    ]
+    $getterMap, 
+    null, 
+    FilteredWrapper::default()->withWrappers(new AttributesWrapper())
 );
-
-$result = $mapper->map($user);
-
-// array (
-//     'name' => 'John Doe',
-//     'name_id' => 'John Doe [123]',
-// )
 ```
+
+#### Use only `MixedWrapper` for better performance
  
-### `Array` -> `Object`
+When not needed fetching data from nested structures and input piped filters (defined as string).
 
-​```php
-<?php
-
-use DataMap\Getter\GetInteger;
-use DataMap\Mapper;
-use DataMap\Output\ObjectHydrator;
-
-$response = [
-    'data' => [
-        'user' => ['id' => 'abc-123', 'name' => 'John'],
-    ],
-];
-
-class UserDto
-{
-    public $id;
-    public $name;
-    public $age;
-}
-
-$responseMapper = new Mapper(
-    [
-        'id' => 'data.user.id',
-        'name' => 'data.user.name',
-        'age' => new GetInteger('data.user.name', 18),
-    ],
-    new ObjectHydrator(UserDto::class)
+```php
+$mapper = new Mapper(
+    $getterMap, 
+    null, 
+    MixedWrapper::default()
 );
+```
 
-$user = $responseMapper->map($response);
+#### Custom filters (see `FilteredInput`):
 
-// UserDto (
-//     'id' => 'abc-123',
-//     'name' => 'John',
-//     'age' => 18,
-// )
+```php
+$mapper = new Mapper(
+    [
+        'slug' => 'title | replace "/[\PL]+/u" "-" | trim "-"'
+    ], 
+    null, 
+    FilteredWrapper::default()->withFilters([
+        'replace' => new Filter('preg_replace', ['//', '', '$$'])
+    ])
+);
 ```

@@ -2,6 +2,7 @@
 
 namespace DataMap\Getter;
 
+use DataMap\Common\NumberUtil;
 use DataMap\Input\Input;
 
 final class GetInteger implements Getter
@@ -22,6 +23,6 @@ final class GetInteger implements Getter
     {
         $value = $input->get($this->key);
 
-        return \is_numeric($value) ? (int)$value : $this->default;
+        return NumberUtil::toIntOrNull($value) ?? $this->default;
     }
 }

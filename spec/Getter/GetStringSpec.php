@@ -17,7 +17,7 @@ final class GetStringSpec extends ObjectBehavior
         $this(new ArrayInput(['key' => 12]))->shouldBe('12');
         $this(new ArrayInput(['key' => '12.34']))->shouldBe('12.34');
         $this(new ArrayInput(['key' => 12.34]))->shouldBe('12.34');
-        $this(new ArrayInput(['key' => false]))->shouldBe('');
+        $this(new ArrayInput(['key' => false]))->shouldBe('0');
         $this(new ArrayInput(['key' => true]))->shouldBe('1');
     }
 

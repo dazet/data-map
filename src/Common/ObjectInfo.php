@@ -2,6 +2,16 @@
 
 namespace DataMap\Common;
 
+use Closure;
+use ReflectionClass;
+use ReflectionMethod;
+use function array_filter;
+use function array_keys;
+use function array_map;
+use function get_object_vars;
+use function in_array;
+use function strtolower;
+
 final class ObjectInfo
 {
     /** @var object */
@@ -13,22 +23,25 @@ final class ObjectInfo
     /** @var string[] */
     private $publicMethods;
 
-    /** @var \ReflectionMethod[] */
+    /** @var ReflectionMethod[] */
     private $publicMethodsReflection;
 
-    public function __construct($object)
+    public function __construct(object $object)
     {
         $this->object = $object;
     }
 
+    /**
+     * @return string[]
+     */
     public function publicProperties(): array
     {
-        return $this->publicProperties ?? $this->publicProperties = \array_keys(\get_object_vars($this->object));
+        return $this->publicProperties ?? $this->publicProperties = array_keys(get_object_vars($this->object));
     }
 
     public function hasPublicProperty(string $key): bool
     {
-        return \in_array($key, $this->publicProperties(), true);
+        return in_array($key, $this->publicProperties(), true);
     }
 
     /**
@@ -36,20 +49,21 @@ final class ObjectInfo
      */
     public function publicMethodsWithoutArguments(): array
     {
-        $isGetter = function (\ReflectionMethod $method): bool {
+        $isGetter = static function (ReflectionMethod $method): bool {
             return $method->getNumberOfParameters() === 0;
         };
 
-        return \array_map($this->methodReflectionToName(), \array_filter($this->publicMethodsReflection(), $isGetter));
+        return array_map($this->methodReflectionToName(), array_filter($this->publicMethodsReflection(), $isGetter));
     }
 
     /**
-     * @return \ReflectionMethod[]
+     * @return ReflectionMethod[]
      */
     public function publicMethodsReflection(): array
     {
-        return $this->publicMethodsReflection ?? $this->publicMethodsReflection = (new \ReflectionClass($this->object))
-                ->getMethods(\ReflectionMethod::IS_PUBLIC & ~\ReflectionMethod::IS_STATIC);
+        return $this->publicMethodsReflection
+            ?? $this->publicMethodsReflection = (new ReflectionClass($this->object))
+                ->getMethods(ReflectionMethod::IS_PUBLIC & ~ReflectionMethod::IS_STATIC);
     }
 
     /**
@@ -65,13 +79,13 @@ final class ObjectInfo
 
     public function hasPublicMethod(string $name): bool
     {
-        return \in_array(\strtolower($name), $this->publicMethods(), true);
+        return in_array(strtolower($name), $this->publicMethods(), true);
     }
 
-    private function methodReflectionToName(): \Closure
+    private function methodReflectionToName(): Closure
     {
-        return function (\ReflectionMethod $method): string {
-            return \strtolower($method->getName());
+        return function (ReflectionMethod $method): string {
+            return strtolower($method->getName());
         };
     }
 }

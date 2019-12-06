@@ -4,6 +4,7 @@ namespace spec\DataMap\Input;
 
 use DataMap\Input\ArrayInput;
 use DataMap\Input\MixedWrapper;
+use InvalidArgumentException;
 use PhpSpec\ObjectBehavior;
 
 final class RecursiveInputSpec extends ObjectBehavior
@@ -76,5 +77,11 @@ final class RecursiveInputSpec extends ObjectBehavior
 
         $this->has('father->name')->shouldBe(true);
         $this->has('father->father->name')->shouldBe(false);
+    }
+
+    function it_throws_InvalidArgumentException_when_recursion_operator_is_empty()
+    {
+        $this->beConstructedWith(new ArrayInput([]), MixedWrapper::default(), '');
+        $this->shouldThrow(InvalidArgumentException::class)->duringInstantiation();
     }
 }

@@ -2,6 +2,11 @@
 
 namespace DataMap\Input;
 
+use InvalidArgumentException;
+use function mb_strrpos;
+use function mb_substr;
+use function strlen;
+
 final class RecursiveInput implements Input
 {
     /** @var Input */
@@ -16,7 +21,7 @@ final class RecursiveInput implements Input
     public function __construct(Input $inner, Wrapper $wrapper, string $dot = '.')
     {
         if ($dot === '') {
-            throw new \InvalidArgumentException('Dot cannot be empty string');
+            throw new InvalidArgumentException('Dot cannot be empty string');
         }
 
         $this->inner = $inner;
@@ -25,18 +30,19 @@ final class RecursiveInput implements Input
     }
 
     /**
+     * @param mixed $default
      * @return mixed
      */
     public function get(string $key, $default = null)
     {
-        if ($this->inner->has($key) || \strpos($key, $this->dot) === false) {
+        if ($this->inner->has($key)) {
             return $this->inner->get($key, $default);
         }
 
         [$current, $rest] = $this->splitKey($key);
         $value = $this->inner->get($current);
 
-        return $this->wrapValue($value)->get($rest, $default);
+        return $rest !== null ? $this->wrapValue($value)->get($rest, $default) : $value;
     }
 
     public function has(string $key): bool
@@ -45,29 +51,40 @@ final class RecursiveInput implements Input
             return true;
         }
 
-        if (\strpos($key, $this->dot) === false) {
+        [$current, $rest] = $this->splitKey($key);
+
+        if ($rest === null) {
             return false;
         }
 
-        [$current, $rest] = $this->splitKey($key);
         $value = $this->inner->get($current);
 
         return $this->wrapValue($value)->has($rest);
     }
 
+    /**
+     * @return array<string|null>
+     */
     private function splitKey(string $key): array
     {
-        $position = \mb_strrpos($key, $this->dot);
+        $position = mb_strrpos($key, $this->dot);
+
+        if ($position === false) {
+            return [$key, null];
+        }
 
         do {
-            $current = \mb_substr($key, 0, $position);
-            $rest = \mb_substr($key, $position + \strlen($this->dot));
-            $position = \mb_strrpos($current, $this->dot);
+            $current = mb_substr($key, 0, $position);
+            $rest = mb_substr($key, $position + strlen($this->dot));
+            $position = mb_strrpos($current, $this->dot);
         } while (!$this->inner->has($current) && $position !== false);
 
         return [$current, $rest];
     }
 
+    /**
+     * @param mixed $value
+     */
     private function wrapValue($value): Input
     {
         return new self($this->wrapper->wrap($value), $this->wrapper, $this->dot);

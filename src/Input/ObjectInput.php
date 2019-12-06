@@ -4,24 +4,30 @@ namespace DataMap\Input;
 
 use DataMap\Common\ObjectInfo;
 use DataMap\Exception\FailedToWrapInput;
+use function array_map;
+use function in_array;
+use function is_object;
+use function strtolower;
 
 final class ObjectInput implements Input
 {
     /** @var object */
     private $object;
 
-    /** @var array */
+    /** @var string[] */
     private $getterPrefixes;
 
     /** @var ObjectInfo */
     private $objectInfo;
 
     /**
+     * @param object $object
+     * @param string[] $getterPrefixes
      * @throws FailedToWrapInput
      */
     public function __construct($object, array $getterPrefixes = ['', 'get', 'is'])
     {
-        if (!\is_object($object)) {
+        if (!is_object($object)) {
             throw new FailedToWrapInput('ObjectInput can only wrap object');
         }
 
@@ -31,6 +37,7 @@ final class ObjectInput implements Input
     }
 
     /**
+     * @param mixed $default
      * @return mixed
      */
     public function get(string $key, $default = null)
@@ -62,7 +69,7 @@ final class ObjectInput implements Input
         $publicMethods = $this->objectInfo->publicMethodsWithoutArguments();
 
         foreach ($this->possibleGetters($key) as $getter) {
-            if (\in_array($getter, $publicMethods, true)) {
+            if (in_array($getter, $publicMethods, true)) {
                 return $getter;
             }
         }
@@ -70,11 +77,14 @@ final class ObjectInput implements Input
         return null;
     }
 
+    /**
+     * @return string[]
+     */
     private function possibleGetters(string $key): array
     {
-        return \array_map(
-            function (string $prefix) use ($key): string {
-                return \strtolower($prefix . $key);
+        return array_map(
+            static function (string $prefix) use ($key): string {
+                return strtolower($prefix . $key);
             },
             $this->getterPrefixes
         );

@@ -2,6 +2,8 @@
 
 namespace spec\DataMap\Getter;
 
+use ArrayIterator;
+use DataMap\Exception\FailedToInitializeMapper;
 use DataMap\Getter\GetInteger;
 use DataMap\Getter\GetRaw;
 use DataMap\Getter\GetterMap;
@@ -14,14 +16,14 @@ final class GetterMapSpec extends ObjectBehavior
         $map = ['a' => new GetInteger('x'), 'b' => new GetRaw('y')];
         $this->beConstructedWith($map);
 
-        $this->getIterator()->shouldIterateAs(new \ArrayIterator($map));
+        $this->getIterator()->shouldIterateAs(new ArrayIterator($map));
     }
 
     function it_wraps_with_GetRaw_getter_defined_by_string()
     {
         $this->beConstructedWith(['a' => 'x', 'b' => 'y']);
 
-        $this->getIterator()->shouldIterateLike(new \ArrayIterator(['a' => new GetRaw('x'), 'b' => new GetRaw('y')]));
+        $this->getIterator()->shouldIterateLike(new ArrayIterator(['a' => new GetRaw('x'), 'b' => new GetRaw('y')]));
     }
 
     function it_can_be_merged_with_other_map()
@@ -37,5 +39,11 @@ final class GetterMapSpec extends ObjectBehavior
 
         $merged->shouldNotBe($this);
         $merged->shouldNotBe($other);
+    }
+
+    function it_throws_FailedToInitializeMapper_when_getter_is_null()
+    {
+        $this->beConstructedWith(['path' => null]);
+        $this->shouldThrow(FailedToInitializeMapper::class)->duringInstantiation();
     }
 }

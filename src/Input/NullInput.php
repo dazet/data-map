@@ -4,6 +4,11 @@ namespace DataMap\Input;
 
 final class NullInput implements Input
 {
+    /**
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
     public function get(string $key, $default = null)
     {
         return $default;

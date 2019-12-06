@@ -3,6 +3,9 @@
 namespace DataMap\Getter;
 
 use DataMap\Input\Input;
+use function array_filter;
+use function array_map;
+use function implode;
 
 final class GetJoinedStrings implements Getter
 {

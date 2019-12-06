@@ -2,18 +2,18 @@
 
 namespace DataMap\Filter;
 
-final class FilterChain
+final class InputFilter
 {
     /** @var string */
     private $key;
 
-    /** @var Filter[] */
+    /** @var Filters */
     private $filters;
 
     public function __construct(string $key, Filter ...$filters)
     {
         $this->key = $key;
-        $this->filters = $filters;
+        $this->filters = new Filters(...$filters);
     }
 
     public function key(): string
@@ -25,13 +25,8 @@ final class FilterChain
      * @param mixed $value
      * @return mixed
      */
-    public function filter($value)
+    public function transform($value)
     {
-        $result = $value;
-        foreach ($this->filters as $filter) {
-            $result = $filter($result);
-        }
-
-        return $result;
+        return $this->filters->transform($value);
     }
 }

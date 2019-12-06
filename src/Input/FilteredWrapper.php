@@ -4,23 +4,23 @@ namespace DataMap\Input;
 
 use DataMap\Exception\FailedToWrapInput;
 use DataMap\Filter\Filter;
-use DataMap\Filter\FilterChainParser;
+use DataMap\Filter\InputFilterParser;
 
 final class FilteredWrapper implements ExtensibleWrapper
 {
-    /** @var ExtensibleWrapper */
+    /** @var Wrapper */
     private $inner;
 
-    /** @var FilterChainParser */
+    /** @var InputFilterParser */
     private $parser;
 
-    public function __construct(Wrapper $inner, ?FilterChainParser $parser = null)
+    public function __construct(Wrapper $inner, ?InputFilterParser $parser = null)
     {
-        $this->inner = $inner instanceof ExtensibleWrapper ? $inner : new MixedWrapper($inner);
-        $this->parser = $parser ?? FilterChainParser::default();
+        $this->inner = $inner;
+        $this->parser = $parser ?? InputFilterParser::default();
     }
 
-    public static function default(): self
+    public static function recursive(): self
     {
         return new self(RecursiveWrapper::default());
     }
@@ -42,7 +42,7 @@ final class FilteredWrapper implements ExtensibleWrapper
     public function withWrappers(Wrapper ...$wrappers): ExtensibleWrapper
     {
         $clone = clone $this;
-        $clone->inner = $this->inner->withWrappers(...$wrappers);
+        $clone->inner = MixedWrapper::extend($this->inner, ...$wrappers);
 
         return $clone;
     }

@@ -3,6 +3,12 @@
 namespace DataMap\Output;
 
 use DataMap\Common\ObjectInfo;
+use InvalidArgumentException;
+use function class_exists;
+use function gettype;
+use function is_object;
+use function is_string;
+use function ucfirst;
 
 final class ObjectHydrator implements Formatter
 {
@@ -12,23 +18,26 @@ final class ObjectHydrator implements Formatter
     /** @var ObjectInfo */
     private $objectInfo;
 
+    /**
+     * @param object|string $object Object to hydrate or class that can be constructed without parameters
+     */
     public function __construct($object)
     {
-        if (\is_object($object)) {
+        if (is_object($object)) {
             $this->object = clone $object;
-        } elseif (\is_string($object) && \class_exists($object)) {
+        } elseif (is_string($object) && class_exists($object)) {
             $this->object = new $object();
         } else {
-            throw new \InvalidArgumentException(sprintf('Expected object or class name got `%s`', \gettype($object)));
+            throw new InvalidArgumentException(sprintf('Expected object or class name got `%s`', gettype($object)));
         }
 
         $this->objectInfo = new ObjectInfo($this->object);
     }
 
     /**
-     * @return object
+     * @param array<string, mixed> $output
      */
-    public function format(array $output)
+    public function format(array $output): object
     {
         $object = clone $this->object;
 
@@ -39,7 +48,10 @@ final class ObjectHydrator implements Formatter
         return $object;
     }
 
-    private function hydrate($object, string $key, $value)
+    /**
+     * @param mixed $value
+     */
+    private function hydrate(object $object, string $key, $value): object
     {
         if ($this->objectInfo->hasPublicProperty($key)) {
             $object->$key = $value;
@@ -47,14 +59,14 @@ final class ObjectHydrator implements Formatter
             return $object;
         }
 
-        $setter = 'set' . \ucfirst($key);
+        $setter = 'set' . ucfirst($key);
         if ($this->objectInfo->hasPublicMethod($setter)) {
             $object->$setter($value);
 
             return $object;
         }
 
-        $immutableSetter = 'with' . \ucfirst($key);
+        $immutableSetter = 'with' . ucfirst($key);
         if ($this->objectInfo->hasPublicMethod($immutableSetter)) {
             return $object->$immutableSetter($value);
         }

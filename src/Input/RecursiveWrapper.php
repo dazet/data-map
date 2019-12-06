@@ -6,12 +6,12 @@ use DataMap\Exception\FailedToWrapInput;
 
 final class RecursiveWrapper implements ExtensibleWrapper
 {
-    /** @var ExtensibleWrapper */
+    /** @var Wrapper */
     private $inner;
 
     public function __construct(Wrapper $inner)
     {
-        $this->inner = $inner instanceof ExtensibleWrapper ? $inner : new MixedWrapper($inner);
+        $this->inner = $inner;
     }
 
     public static function default(): self
@@ -38,7 +38,7 @@ final class RecursiveWrapper implements ExtensibleWrapper
     public function withWrappers(Wrapper ...$wrappers): ExtensibleWrapper
     {
         $clone = clone $this;
-        $clone->inner = $this->inner->withWrappers(...$wrappers);
+        $clone->inner = MixedWrapper::extend($this->inner, ...$wrappers);
 
         return $clone;
     }

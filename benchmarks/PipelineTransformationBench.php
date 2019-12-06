@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use DataMap\Input\Input;
 use DataMap\Input\FilteredWrapper;
+use DataMap\Input\Input;
 use DataMap\Input\RecursiveWrapper;
 use DataMap\Mapper;
 use PhpBench\Benchmark\Metadata\Annotations\Groups;
@@ -49,7 +49,7 @@ final class PipelineTransformationBench
                 'integer' => 'integer.value | int'
             ],
             null,
-            FilteredWrapper::default()
+            FilteredWrapper::recursive()
         );
 
         $mapper->map(['string' => ['value' => '  asdfghjkl  '], 'integer' => ['value' => '123456']]);

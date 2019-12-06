@@ -29,18 +29,18 @@ final class Mapper
     private $formatter;
 
     /**
-     * @param callable[]|string[] $map
+     * @param iterable<string, callable|string> $map
      */
     public function __construct(iterable $map, ?Formatter $formatter = null, ?Wrapper $wrapper = null)
     {
         $this->map = GetterMap::fromIterable($map);
-        $this->wrapper = $wrapper ?? FilteredWrapper::default();
+        $this->wrapper = $wrapper ?? FilteredWrapper::recursive();
         $this->formatter = $formatter ?? ArrayFormatter::default();
     }
 
     /**
-     * @param mixed $input Input supported by Wrapper, by default array or plain object.
-     * @return array|mixed Output type depends on Formatter, by default associative array.
+     * @param mixed $input Input supported by Wrapper.
+     * @return mixed Output type depends on Formatter.
      */
     public function map($input)
     {
@@ -54,6 +54,10 @@ final class Mapper
         return $this->formatter->format($output);
     }
 
+    /**
+     * @param mixed $input
+     * @return mixed
+     */
     public function __invoke($input)
     {
         return $this->map($input);
@@ -83,6 +87,9 @@ final class Mapper
         return $clone;
     }
 
+    /**
+     * @param iterable<string, callable|string> $map
+     */
     public function withAddedMap(iterable $map): self
     {
         return $this->withGetters(GetterMap::fromIterable($map));

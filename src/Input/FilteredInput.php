@@ -2,23 +2,24 @@
 
 namespace DataMap\Input;
 
-use DataMap\Filter\FilterChainParser;
+use DataMap\Filter\InputFilterParser;
 
 final class FilteredInput implements Input
 {
     /** @var Input */
     private $inner;
 
-    /** @var FilterChainParser */
+    /** @var InputFilterParser */
     private $parser;
 
-    public function __construct(Input $inner, FilterChainParser $parser)
+    public function __construct(Input $inner, InputFilterParser $parser)
     {
         $this->inner = $inner;
         $this->parser = $parser;
     }
 
     /**
+     * @param mixed $default
      * @return mixed
      */
     public function get(string $key, $default = null)
@@ -26,7 +27,7 @@ final class FilteredInput implements Input
         $filter = $this->parser->parse($key);
         $value = $this->inner->get($filter->key());
 
-        return $filter->filter($value);
+        return $filter->transform($value);
     }
 
     public function has(string $key): bool

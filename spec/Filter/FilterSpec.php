@@ -2,8 +2,10 @@
 
 namespace spec\DataMap\Filter;
 
+use InvalidArgumentException;
 use PhpSpec\ObjectBehavior;
 use spec\DataMap\Stub\DummyCallable;
+use function trim;
 
 final class FilterSpec extends ObjectBehavior
 {
@@ -57,5 +59,35 @@ final class FilterSpec extends ObjectBehavior
 
         $callable->__invoke('X', 'value', 'Z')->shouldBeCalled()->willReturn('result');
         $copiedFilter('value')->shouldReturn('result');
+    }
+
+    function it_remembers_variable_argument_position_when_copied(DummyCallable $callable)
+    {
+        $this->beConstructedWith($callable, ['X', '$$']);
+
+        $copiedFilter = $this->withArgs(['Y']);
+        $copiedFilter->shouldNotBeLike($this);
+
+        $callable->__invoke('Y', 'value')->shouldBeCalled()->willReturn('result');
+        $copiedFilter('value')->shouldReturn('result');
+    }
+
+    function it_throws_InvalidArgumentException_when_trying_to_copy_with_value_in_place_of_variable(
+        DummyCallable $callable
+    ) {
+        $this->beConstructedWith($callable, ['X', '$$']);
+        $this->shouldThrow(InvalidArgumentException::class)->during('withArgs', [['Y', 'Z']]);
+    }
+
+    function it_returns_same_instance_when_wrapping_self()
+    {
+        $this->beConstructedThrough('wrap', ['trim']);
+        $this::wrap($this)->shouldReturn($this);
+    }
+
+    function it_returns_same_instance_when_wrapping_nullable_self()
+    {
+        $this->beConstructedThrough('nullable', [new DummyCallable()]);
+        $this::nullable($this)->shouldReturn($this);
     }
 }
