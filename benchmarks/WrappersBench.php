@@ -38,6 +38,6 @@ final class WrappersBench
      */
     public function pipelineWrappedConstruct(): void
     {
-        FilteredWrapper::recursive();
+        FilteredWrapper::default();
     }
 }

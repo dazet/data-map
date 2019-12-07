@@ -20,7 +20,7 @@ final class FilteredWrapper implements ExtensibleWrapper
         $this->parser = $parser ?? InputFilterParser::default();
     }
 
-    public static function recursive(): self
+    public static function default(): self
     {
         return new self(RecursiveWrapper::default());
     }

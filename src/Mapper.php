@@ -34,7 +34,7 @@ final class Mapper
     public function __construct(iterable $map, ?Formatter $formatter = null, ?Wrapper $wrapper = null)
     {
         $this->map = GetterMap::fromIterable($map);
-        $this->wrapper = $wrapper ?? FilteredWrapper::recursive();
+        $this->wrapper = $wrapper ?? FilteredWrapper::default();
         $this->formatter = $formatter ?? ArrayFormatter::default();
     }
 

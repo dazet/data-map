@@ -70,23 +70,24 @@ final class InputFilterParserSpec extends ObjectBehavior
         $bool = $this->parse('key | bool');
         $boolean = $this->parse('key | boolean');
 
-        $bool->transform(1)->shouldReturn(true);
-        $boolean->transform(1)->shouldReturn(true);
-        $bool->transform('1')->shouldReturn(true);
-        $boolean->transform('1')->shouldReturn(true);
-        $bool->transform('true')->shouldReturn(true);
-        $boolean->transform('true')->shouldReturn(true);
+        $tests = [
+            [1, true],
+            ['1', true],
 
-        $bool->transform(0)->shouldReturn(false);
-        $boolean->transform(0)->shouldReturn(false);
-        $bool->transform('0')->shouldReturn(false);
-        $boolean->transform('0')->shouldReturn(false);
-        $bool->transform('false')->shouldReturn(false);
-        $boolean->transform('false')->shouldReturn(false);
+            [0, false],
+            ['0', false],
 
-        $bool->transform('')->shouldReturn(null);
-        $bool->transform('abc')->shouldReturn(null);
-        $bool->transform([])->shouldReturn(null);
+            ['true', null],
+            ['false', null],
+            ['', null],
+            ['abc', null],
+            [[], null],
+        ];
+
+        foreach ($tests as [$value, $expected]) {
+            $bool->transform($value)->shouldReturn($expected);
+            $boolean->transform($value)->shouldReturn($expected);
+        }
     }
 
     function it_has_default_array_cast_filter()

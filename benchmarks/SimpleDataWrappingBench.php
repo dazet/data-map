@@ -70,7 +70,7 @@ final class SimpleDataWrappingBench
      */
     public function pipedRecursiveWrapping(): void
     {
-        $mapper = new Mapper(self::MAP, null, FilteredWrapper::recursive());
+        $mapper = new Mapper(self::MAP, null, FilteredWrapper::default());
         $mapper->map($this->data);
     }
 
@@ -122,7 +122,7 @@ final class SimpleDataWrappingBench
      */
     public function pipedRecursiveWrapping100x(): void
     {
-        $mapper = new Mapper(self::MAP, null, FilteredWrapper::recursive());
+        $mapper = new Mapper(self::MAP, null, FilteredWrapper::default());
         $result = [];
 
         foreach ($this->data100x as $i => $data) {

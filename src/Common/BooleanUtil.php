@@ -7,8 +7,8 @@ use function in_array;
 
 final class BooleanUtil
 {
-    public const TRUTHS = [true, 1, '1', 'true', 'TRUE', 'True'];
-    public const FALLACY = [false, 0, '0', 'false', 'FALSE', 'False'];
+    public const TRUTHS = [true, 1, '1'];
+    public const FALLACY = [false, 0, '0'];
     /** @var callable */
     public const toBoolOrNull = [self::class, 'toBoolOrNull'];
 

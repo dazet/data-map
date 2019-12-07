@@ -49,7 +49,7 @@ final class PipelineTransformationBench
                 'integer' => 'integer.value | int'
             ],
             null,
-            FilteredWrapper::recursive()
+            FilteredWrapper::default()
         );
 
         $mapper->map(['string' => ['value' => '  asdfghjkl  '], 'integer' => ['value' => '123456']]);

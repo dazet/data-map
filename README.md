@@ -6,7 +6,7 @@ Library for mapping and transforming data structures.
 
 ## Defining mapper
 
-`Mapper` configuration is defined as association `[Key1 => Getter1, Key2 => Getter2 ...]` describing output structure.
+`Mapper` configuration is a description of output structure defined as association `[Key1 => Getter1, Key2 => Getter2 ...]`.
 
 `Key` defines property name in output structure and `Getter` is a function that extracts value from input.
 
@@ -64,6 +64,8 @@ $outputCollection = array_map($mapper, $inputCollection);
 $newMapper = $mapper->withAddedMap(['country' => 'address.city.country']);
 ```
 
+## Getter function
+
 `Getter` generally can be described as interface:
 
 ```php
@@ -84,7 +86,7 @@ There are 2 forms of defining map:
 * `Getter` can also be a closure or any other callable. It will receive `DataMap\Input\Input` as first argument and original input as second argument. 
   `Getter` interface is not required, it's just a hint.
 
-## Predefined Getters
+### Predefined Getters
 
 #### `new GetRaw($key, $default)`
 
@@ -192,7 +194,7 @@ $mapper = new Mapper([
 
 $mapper->map(['agree' => 'yes']) === ['agree' => true];
 $mapper->map(['agree' => 'no']) === ['agree' => false];
-$mapper->map(['agree' => 'maybe']) === ['agree' => null];
+$mapper->map(['agree' => 'maybe']) === ['agree' => false];
 ```
 
 #### `GetFiltered::from('key')->...`
@@ -244,12 +246,12 @@ $mapper->map(['number' => 'x']); // throws InvalidArgumentException
 $mapper->map(['number' => 1]); // returns ['required_int' => 1]
 ```
 
-## Input fetching
+## Input abstraction
 
-`Input` interface defines common abstraction for fetching data from different data structures.
-Mapping can be defined without going into details about underlying data type. 
+`Input` interface defines common abstraction for accessing data from different data structures,
+so mapping and getters must not depend of underlying data type. 
 
-It also allows to create input decorators for additional input processing, like data filtering, transformation, data traversing etc.
+It also allows to create input decorators for additional input processing, like data filtering, transformation, traversing etc.
 
 #### `ArrayInput`
 
@@ -270,9 +272,9 @@ $input->has('two'); // false
 
 #### `ObjectInput`
 
-Wraps generic object and allows fetch data using object public interface: public properties or getters (getter is a public method without parameters that returns some value).
+Wraps generic object and fetches data using object public interface: public properties or getters (a public method without parameters that returns some value).
 
-Fetch method for key `name` is resolved in the following order:
+Access method for key example `name` is resolved in the following order:
 * check for public property `name`
 * check for getter `name()`
 * check for getter `getName()`
@@ -299,7 +301,7 @@ class Example
 $object = new Example();
 $input = new ObjectInput($object);
 
-$input->get('one'); // 1 (property $object->one)
+$input->get('one'); // 1 (public property $object->one)
 $input->get('two'); // 2 (getter $object->())
 $input->get('three'); // 3 (getter $object->getThree())
 $input->get('four'); // null (no property, no getter)
@@ -360,44 +362,49 @@ $input->get('price | round 2'); // 123.12
 $input->get('price | ceil | integer'); // 124
 ```
 
-##### Default filters
+Default input parser supports given filters filters 
 
-* `string`: cast value to string if possible or return null
-* `int`, `integer`: cast to integer or return null
-* `float`: cast to float or return null
-* `bool`, `boolean`: try to resolve value as boolean or return null
-* `array`: cast value to array if possible (from array or iterable) or return null
-* `explode [delimiter=","]`: explode string using delimiter
-  e.g. 1: default explode by comma `string | explode`
-  e.g. 2: explode by custom string `string | explode "-"`
-* `implode [delimiter=","]`: implode array of strings using delimiter
-  e.g. 1: default implode by comma `array | implode`
-  e.g. 2: explode by custom string `array | implode "-"`
-* `upper`: upper case string
-* `lower`: lower case string
-* `trim`, `ltrim`, `rtrim`: trim string
-* `format`: format value as string using `sprintf`
-  e.g. 1: `string | format "string: %s"`
-  e.g. 2: `float | format "price: $%01.2f"` transforms `12.3499` to `'price: $12.35'`
-* `replace [search] [replace=""]`: replace substring in string like `str_replace` function
-  e.g. 1: `string | replace "remove me"` replaces `'remove me'` with empty sting
-  e.g. 2: `string | replace "red" "green"` transforms `'tests are red'` to `'tests are green'`
-* `strip_tags`: same as `strip_tags` function
-* `number_format [decimals=2] [decimal_point="."] [thousands_separator=","]`: same as `number_format` function
-* `round [precision=0]`: same as `round` function
-* `floor`
-* `ceil`
-* `datetime`: try to transform value to `DateTimeImmutable` or return null
-* `date_format [format="Y-m-d H:i:s"]`: try to transform value to datetime and format as string or return null when value cannot be transformed
-* `date_modify [modifier]`: try to transform value to `DateTimeImmutable` and then transform it using modifier `$datetime->modify($modifier)`, e.g.: `date_string | date_modify "+1 day"`
-* `timestamp`: try to transform value to datetime and then to timestamp or return null
-* `json_encode`
-* `json_decode`
-* `count`: return count for array or `Countable` or null when not countable
-* `if_null [then]`: define default value when mapped value is null
-  e.g. `maybe_string | string | if_null "default"`
-* `if_empty [then]`: define default value when mapped value is empty
-  e.g. `maybe_string | string | if_empty "default"`
+| Filter | Description |
+|--------|-------------|
+| `string` | cast value to string if possible or return null |
+| `int`, `integer` | cast to integer or return null |
+| `float` | cast to float or return null |
+| `bool`, `boolean` | resolve value as boolean or return null |
+| `array` | cast value to array if possible (from array or iterable) or return null |
+| `explode [delimiter=","]` | explode string using delimiter (`,` by default) |
+| `implode [delimiter=","]` | implode array of strings using delimiter (`,` by default) | 
+| `upper` | upper case string |
+| `lower` | lower case string |
+| `trim`, `ltrim`, `rtrim` | trim string |
+| `format` | format value as string using `sprintf` |
+| `replace [search] [replace=""]` | replace substring in string like `str_replace` function |
+| `strip_tags` | same as `strip_tags` function |
+| `number_format [decimals=2] [decimal_point="."] [thousands_separator=","]` | same as `number_format` function |
+| `round [precision=0]` | same as `round` function |
+| `floor` | |
+| `ceil` | |
+| `datetime` | try to transform value to `DateTimeImmutable` or return null |
+| `date_format [format="Y-m-d H:i:s"]` | try to transform value to datetime and format as string or return null when value cannot be transformed |
+| `date_modify [modifier]` | try to transform value to `DateTimeImmutable` and then transform it using modifier `$datetime->modify($modifier)` |
+| `timestamp` | try to transform value to datetime and then to timestamp or return null |
+| `json_encode` | |
+| `json_decode` | |
+| `count` | return count for array or `Countable` or null when not countable |
+| `if_null [then]` | define default value when mapped value is null |
+| `if_empty [then]` | define default value when mapped value is empty |
+
+Examples
+* default explode by comma: `string | explode`
+* explode by custom string: `string | explode "-"`
+* default implode by comma: `array | implode`
+* implode by custom string: `array | implode "-"`
+* format string like `sprintf`: `string | format "string: %s"`
+* format money from float: `float | format "price: $%01.2f"` - transforms `12.3499` to `'price: $12.35'`
+* cast to string with default value: `maybe_string | string | if_null "default"`
+* cast to date and modify: `date_string | date_modify "+1 day"`
+* calculate md5 of mapped value: `key | string | md5`
+* wrap string after 20 characters: `key | string | wordwrap 20`
+* using native function with custom argument position of mapped value `key | string | preg_replace "/\s+/" " " $$`
 
 ##### Function as transformation
 
@@ -405,19 +412,15 @@ Default configuration of `InputFilterParser` allows use any PHP function as tran
 By default mapped value is passed as first argument to that function optionally followed by other arguments defined in filter config. 
 It is also possible to define different argument position of mapped value using `$$` as a placeholder.
 
-###### Examples:
-
-* calculate md5 of mapped value: `key | string | md5`
-* wrap string after 20 characters: `key | string | wordwrap 20`
-* custom argument position of mapped value `key | string | preg_replace "/\s+/" " " $$`
-
 ## Output formatting
 
-MapperInterface output depends on `Formatter` used by `Mapper`.
+Mapping output type depends on `Formatter` used by `Mapper`.
 
 Built-in formatters:
 
 #### `ArrayFormatter`
+
+Returns associative array which is raw result of Mapper transformation.
 
 ```php
 $mapper = new Mapper($map);
@@ -427,6 +430,12 @@ $mapper = new Mapper($map, new ArrayFormatter());
 
 #### `ObjectConstructor`
 
+Tries to create new instance of object using regular constructor.
+Keys are matched with constructor parameters by variable name.
+
+There is no value type and correctness checking, so you will get TypeError when mapped types does not match.
+It also fallback to `null` value when object constructor has parameter that is not in the mapping.
+
 ```php
 // by class constructor:
 $mapper = new Mapper($map, new ObjectConstructor(SomeClass::class));
@@ -435,9 +444,11 @@ $mapper = new Mapper($map, new ObjectConstructor(SomeClass::class));
 $mapper = new Mapper($map, new ObjectConstructor(SomeClass::class, 'method'));
 ```
 
-Tries to create new instance of object using regular constructor. Map keys are matched with constructor parameters by variable name.
-
 #### `ObjectHydrator`
+
+Tries to hydrate instance of object using his public interface, that is:
+* by setting public properties values
+* by using setters (`setSomething` or `withSomething` assuming immutability)
 
 ```php
 // by class constructor:
@@ -447,19 +458,15 @@ $mapper = new Mapper($map, new ObjectHydrator(new SomeClass()));
 $mapper = new Mapper($map, new ObjectHydrator(SomeClass::class));
 ```
 
-Tries to hydrate instance of object by setting public properties values or using setters (`setSomething` or `withSomething` assuming immutability).
-
 ## Customizing and extending
 
 `Mapper` consists of 3 components:
 
-* `GetterMap` that describes mapping
-* `InputWrapper` that allows to wraps input structure with proper `Input` implementation
-* output `Formatter` that formats result as array or object of some class.
+* `GetterMap` that describes mapping as `string => Getter` association,
+* `Wrapper` that wraps input mixed structure with proper `Input` implementation,
+* `Formatter` that formats raw mapping result (associative array) to array, object, XML, JSON and so on.
 
 ```php
-$getterMap = [...];
-
 $mapper = new Mapper($getterMap);
 
 // which is equivalent of:
@@ -470,9 +477,9 @@ $mapper = new Mapper(
 );
 ```
 
-## Customizing `Mapper`
+#### Implement `Input` and `Wrapper` to extract data from specific sources
 
-#### Implement `Input` and `InputWrapper` to extract data from various sources
+It is possible to define data extracting for some object type explicitly.
 
 ```php
 interface Attributes
@@ -507,33 +514,40 @@ class AttributesWrapper implements Wrapper
 
 $mapper = new Mapper(
     $getterMap, 
-    null, 
+    ArrayFormatter::default(), 
     FilteredWrapper::default()->withWrappers(new AttributesWrapper())
 );
 ```
 
 #### Use only `MixedWrapper` for better performance
- 
-When not needed fetching data from nested structures and input piped filters (defined as string).
+
+By default Mapper supports nested structure fetching and value filters, which is nice but has some expense in performance (see BENCHMARK.md). 
+But it is possible to create Mapper only with MixedWrapper when these feature are not needed.
 
 ```php
 $mapper = new Mapper(
     $getterMap, 
-    null, 
+    ArrayFormatter::default(), 
     MixedWrapper::default()
 );
 ```
 
-#### Custom filters (see `FilteredInput`):
+#### Custom filters for `FilteredInput`
+
+Filter functions list can be extended or overwritten with own implementation.
 
 ```php
 $mapper = new Mapper(
     [
-        'slug' => 'title | replace "/[\PL]+/u" "-" | trim "-"'
+        'slug' => 'title | my_replace "/[\PL]+/u" "-" | trim "-"'
     ], 
-    null, 
+    ArrayFormatter::default(), 
     FilteredWrapper::default()->withFilters([
-        'replace' => new Filter('preg_replace', ['//', '', '$$'])
+        'my_replace' => new Filter('preg_replace', ['//', '', '$$'])
     ])
 );
 ```
+
+#### Custom `Formatter`
+
+...

@@ -35,7 +35,7 @@ final class FilteredWrapperSpec extends ObjectBehavior
 
     function it_can_be_created_with_default_inner_recursive_wrapper()
     {
-        $this->beConstructedThrough('recursive');
+        $this->beConstructedThrough('default');
 
         $data = [
             'nested' => [
