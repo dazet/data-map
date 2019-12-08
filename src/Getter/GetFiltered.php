@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap\Getter;
 
@@ -51,18 +51,18 @@ final class GetFiltered implements Getter
         return $this->filters->transform($value);
     }
 
-    public function with(callable ...$filters): self
+    public function with(callable $filters): self
     {
         $clone = clone $this;
-        $clone->filters = $this->filters->with(...$filters);
+        $clone->filters = $this->filters->with($filters);
 
         return $clone;
     }
 
-    public function withNullable(callable ...$filters): self
+    public function withNullable(callable $filters): self
     {
         $clone = clone $this;
-        $clone->filters = $this->filters->withNullable(...$filters);
+        $clone->filters = $this->filters->withNullable($filters);
 
         return $clone;
     }

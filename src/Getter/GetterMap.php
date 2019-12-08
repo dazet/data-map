@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap\Getter;
 
@@ -27,7 +27,7 @@ final class GetterMap implements IteratorAggregate
     public function __construct(iterable $map)
     {
         foreach ($map as $key => $getter) {
-            $this->map[$key] = $this->callableGetter($key, $getter);
+            $this->map[$key] = $this->callableGetter((string)$key, $getter);
         }
     }
 

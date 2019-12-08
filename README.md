@@ -6,7 +6,10 @@ Library for mapping and transforming data structures.
 
 ## Defining mapper
 
-`Mapper` configuration is a description of output structure defined as association `[Key1 => Getter1, Key2 => Getter2 ...]`.
+`Mapper` configuration is a description of output structure defined as association:
+```
+[Key1 => Getter1, Key2 => Getter2 ...]
+```
 
 `Key` defines property name in output structure and `Getter` is a function that extracts value from input.
 
@@ -246,6 +249,33 @@ $mapper->map(['number' => 'x']); // throws InvalidArgumentException
 $mapper->map(['number' => 1]); // returns ['required_int' => 1]
 ```
 
+`GetFiltered` has set of built-in filters similar to `FilteredInput` but is a little faster, because filters don't need to be parsed from string.
+
+* **`with(callable ...$filters)`**: add to pipeline custom filter functions
+* **`withNullable(callable ...$filters)`**: add to pipeline custom filter functions that will be called even when value has become null
+* **`string()`**: try cast to string
+* **`int()`**: try cast to int
+* **`float()`**: try cast to float
+* **`bool()`**: try cast to bool
+* **`array()`**: try cast to array
+* **`explode(string $delimiter)`**
+* **`implode(string $glue)`**
+* **`upper()`**
+* **`lower()`**
+* **`trim()`**
+* **`format(string $template)`**: format value with `sprintf` template
+* **`replace(string $search, string $replace)`**
+* **`stripTags()`**
+* **`numberFormat(int $decimals = 0, string $decimalPoint = '.', string $thousandsSeparator = ',')`**
+* **`round(int $precision = 0)`**
+* **`floor()`**
+* **`ceil()`**
+* **`date()`**: try cast to `DateTimeImmutable`
+* **`dateFormat(string $format)`**
+* **`count()`**
+* **`ifNull($default)`**
+* **`ifEmpty($default)`**
+
 ## Input abstraction
 
 `Input` interface defines common abstraction for accessing data from different data structures,
@@ -362,36 +392,33 @@ $input->get('price | round 2'); // 123.12
 $input->get('price | ceil | integer'); // 124
 ```
 
-Default input parser supports given filters filters 
-
-| Filter | Description |
-|--------|-------------|
-| `string` | cast value to string if possible or return null |
-| `int`, `integer` | cast to integer or return null |
-| `float` | cast to float or return null |
-| `bool`, `boolean` | resolve value as boolean or return null |
-| `array` | cast value to array if possible (from array or iterable) or return null |
-| `explode [delimiter=","]` | explode string using delimiter (`,` by default) |
-| `implode [delimiter=","]` | implode array of strings using delimiter (`,` by default) | 
-| `upper` | upper case string |
-| `lower` | lower case string |
-| `trim`, `ltrim`, `rtrim` | trim string |
-| `format` | format value as string using `sprintf` |
-| `replace [search] [replace=""]` | replace substring in string like `str_replace` function |
-| `strip_tags` | same as `strip_tags` function |
-| `number_format [decimals=2] [decimal_point="."] [thousands_separator=","]` | same as `number_format` function |
-| `round [precision=0]` | same as `round` function |
-| `floor` | |
-| `ceil` | |
-| `datetime` | try to transform value to `DateTimeImmutable` or return null |
-| `date_format [format="Y-m-d H:i:s"]` | try to transform value to datetime and format as string or return null when value cannot be transformed |
-| `date_modify [modifier]` | try to transform value to `DateTimeImmutable` and then transform it using modifier `$datetime->modify($modifier)` |
-| `timestamp` | try to transform value to datetime and then to timestamp or return null |
-| `json_encode` | |
-| `json_decode` | |
-| `count` | return count for array or `Countable` or null when not countable |
-| `if_null [then]` | define default value when mapped value is null |
-| `if_empty [then]` | define default value when mapped value is empty |
+Default input parser supports given filters: 
+* **`string`**: cast value to string if possible or return null |
+* **`int`, `integer`**: cast to integer or return null
+* **`float`**: cast to float or return null
+* **`bool`, `boolean`**: resolve value as boolean or return null
+* **`array`**: cast value to array if possible (from array or iterable) or return null
+* **`explode [delimiter=","]`**: explode string using delimiter (`,` by default)
+* **`implode [delimiter=","]`**: implode array of strings using delimiter (`,` by default)
+* **`upper`**: upper case string
+* **`lower`**: lower case string
+* **`trim`, `ltrim`, `rtrim`**: trim string
+* **`format`**: format value as string using `sprintf`
+* **`replace [search] [replace=""]`**: replace substring in string like `str_replace` function
+* **`strip_tags`**: same as `strip_tags` function
+* **`number_format [decimals=2] [decimal_point="."] [thousands_separator=","]`**: same as `number_format` function
+* **`round [precision=0]`**: same as `round` function
+* **`floor`**: floor value, returns `float|null`
+* **`ceil`**: floor value, returns `float|null`
+* **`datetime`**: try to transform value to `DateTimeImmutable` or return null
+* **`date_format [format="Y-m-d H:i:s"]`**: try to transform value to datetime and format as string or return null when value cannot be transformed
+* **`date_modify [modifier]`**: try to transform value to `DateTimeImmutable` and then transform it using modifier `$datetime->modify($modifier)`
+* **`timestamp`**: try to transform value to datetime and then to timestamp or return null
+* **`json_encode`**: encode value to json or return null 
+* **`json_decode`**: decode array from json string or return null when failed
+* **`count`**: return count for array or `Countable` or null when not countable
+* **`if_null [then]`**: return default value when mapped value is null
+* **`if_empty [then]`**: return default value when mapped value is empty
 
 Examples
 * default explode by comma: `string | explode`
@@ -451,10 +478,10 @@ Tries to hydrate instance of object using his public interface, that is:
 * by using setters (`setSomething` or `withSomething` assuming immutability)
 
 ```php
-// by class constructor:
+// hydrate instance clone
 $mapper = new Mapper($map, new ObjectHydrator(new SomeClass()));
 
-// by static method:
+// new instance from class name
 $mapper = new Mapper($map, new ObjectHydrator(SomeClass::class));
 ```
 
@@ -477,7 +504,7 @@ $mapper = new Mapper(
 );
 ```
 
-#### Implement `Input` and `Wrapper` to extract data from specific sources
+####💡💡💡💡💡 Implement `Input` and `Wrapper` to extract data from specific sources
 
 It is possible to define data extracting for some object type explicitly.
 
@@ -550,4 +577,50 @@ $mapper = new Mapper(
 
 #### Custom `Formatter`
 
-...
+Custom formatter can be used to achieve better object construction performance than generic object formatters.
+It is also possible to create formatters creating different result types like XML, JSON etc.
+
+```php
+class Person
+{
+    /** @var string */
+    private $name;
+
+    /** @var string */
+    private $surname;
+
+    public function __construct(string $name, string $surname)
+    {
+        $this->name = $name;
+        $this->surname = $surname;
+    }
+    // ...
+}
+
+class PersonFormatter implements Formatter
+{
+    public function format(array $output): Person
+    {
+        return new Person($output['name'], $output['surname']);
+    }
+}
+
+class JsonFormatter implements Formatter
+{
+    public function format(array $output): string
+    {
+        return json_encode($output);
+    }
+}
+
+$map = [
+    'name' => 'person.name | string',
+    'surname' => 'person.surname | string',
+];
+
+$toPerson = new Mapper($map, new PersonFormatter());
+$toPerson->map(['person' => ['name' => 'John', 'surname' => 'Doe']]); // result: new Person('John', 'Doe');
+
+$toJson = new Mapper($map, new JsonFormatter());
+$toJson->map(['person' => ['name' => 'John', 'surname' => 'Doe']]); // result: {"name":"John","surname":"Doe"};
+```

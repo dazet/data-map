@@ -5,49 +5,50 @@ Benchmarks
 
 benchmark | subject | revs | mem_peak | time_rev | diff
  --- | --- | --- | --- | --- | --- 
-ObjectHydratorBench | plainPhpHydrationOnce | 10000 | 1,057,672b | 0.000ms | 1.58x
-ObjectHydratorBench | plainPhpConstructionOnce | 10000 | 1,057,680b | 0.000ms | 1.00x
-ObjectHydratorBench | objectHydratorOnce | 10000 | 1,110,504b | 0.004ms | 18.66x
-ObjectHydratorBench | objectConstructorOnce | 10000 | 12,837,384b | 0.003ms | 14.50x
+ObjectHydratorBench | plainPhpHydrationOnce | 1000 | 975,440b | 0.000ms | 1.00x
+ObjectHydratorBench | plainPhpConstructionOnce | 1000 | 975,448b | 0.000ms | 1.23x
+ObjectHydratorBench | objectHydratorOnce | 1000 | 1,030,376b | 0.004ms | 13.93x
+ObjectHydratorBench | objectConstructorOnce | 1000 | 2,141,088b | 0.003ms | 10.21x
 
 ### groups: object hydrator 100x
 
 benchmark | subject | revs | mem_peak | time_rev | diff
  --- | --- | --- | --- | --- | --- 
-ObjectHydratorBench | plainPhpHydration100x | 10000 | 1,067,016b | 0.027ms | 1.87x
-ObjectHydratorBench | plainPhpConstruction100x | 10000 | 1,066,928b | 0.015ms | 1.00x
-ObjectHydratorBench | objectHydrator100x | 10000 | 1,124,952b | 0.163ms | 11.07x
-ObjectHydratorBench | objectConstructor100x | 10000 | 12,854,224b | 0.073ms | 4.93x
+ObjectHydratorBench | plainPhpHydration100x | 1000 | 984,784b | 0.026ms | 1.72x
+ObjectHydratorBench | plainPhpConstruction100x | 1000 | 984,696b | 0.015ms | 1.00x
+ObjectHydratorBench | objectHydrator100x | 1000 | 1,042,496b | 0.154ms | 10.13x
+ObjectHydratorBench | objectConstructor100x | 1000 | 2,174,376b | 0.072ms | 4.71x
 
 ### groups: pipeline transformation
 
 benchmark | subject | revs | mem_peak | time_rev | diff
  --- | --- | --- | --- | --- | --- 
-PipelineTransformationBench | plainPhpRecursiveTransformation | 10000 | 1,131,040b | 0.007ms | 1.00x
-PipelineTransformationBench | pipelineRecursiveTransformation | 10000 | 1,216,424b | 0.010ms | 1.40x
+PipelineTransformationBench | plainPhp | 1000 | 1,069,056b | 0.008ms | 1.00x
+PipelineTransformationBench | filteredGetter | 1000 | 1,132,944b | 0.016ms | 2.15x
+PipelineTransformationBench | filtersPipeline | 1000 | 1,259,920b | 0.011ms | 1.45x
 
 ### groups: wrapper construct
 
 benchmark | subject | revs | mem_peak | time_rev | diff
  --- | --- | --- | --- | --- | --- 
-WrappersBench | mixedWrappedConstruct | 10000 | 1,036,800b | 0.000ms | 1.00x
-WrappersBench | recursiveWrappedConstruct | 10000 | 1,041,656b | 0.000ms | 1.02x
-WrappersBench | pipelineWrappedConstruct | 10000 | 1,137,880b | 0.000ms | 3.94x
+WrappersBench | mixedWrappedConstruct | 1000 | 954,688b | 0.000ms | 1.00x
+WrappersBench | recursiveWrappedConstruct | 1000 | 959,600b | 0.000ms | 1.11x
+WrappersBench | pipelineWrappedConstruct | 1000 | 1,064,168b | 0.001ms | 2.36x
 
 ### groups: wrapping
 
 benchmark | subject | revs | mem_peak | time_rev | diff
  --- | --- | --- | --- | --- | --- 
-SimpleDataWrappingBench | onlyMixedWrapping | 10000 | 1,187,472b | 0.003ms | 1.00x
-SimpleDataWrappingBench | recursiveWrapping | 10000 | 1,193,200b | 0.003ms | 1.18x
-SimpleDataWrappingBench | pipedRecursiveWrapping | 10000 | 1,225,672b | 0.004ms | 1.64x
+SimpleDataWrappingBench | onlyMixedWrapping | 1000 | 1,117,368b | 0.003ms | 1.00x
+SimpleDataWrappingBench | recursiveWrapping | 1000 | 1,132,840b | 0.004ms | 1.19x
+SimpleDataWrappingBench | pipedRecursiveWrapping | 1000 | 1,168,808b | 0.005ms | 1.59x
 
 ### groups: wrapping 100x
 
 benchmark | subject | revs | mem_peak | time_rev | diff
  --- | --- | --- | --- | --- | --- 
-SimpleDataWrappingBench | onlyMixedWrapping100x | 10000 | 1,187,472b | 0.148ms | 1.00x
-SimpleDataWrappingBench | recursiveWrapping100x | 10000 | 1,195,504b | 0.195ms | 1.32x
-SimpleDataWrappingBench | pipedMixedWrapping100x | 10000 | 1,217,912b | 0.229ms | 1.55x
-SimpleDataWrappingBench | pipedRecursiveWrapping100x | 10000 | 1,232,216b | 0.276ms | 1.87x
+SimpleDataWrappingBench | onlyMixedWrapping100x | 1000 | 1,123,232b | 0.129ms | 1.00x
+SimpleDataWrappingBench | recursiveWrapping100x | 1000 | 1,137,640b | 0.176ms | 1.36x
+SimpleDataWrappingBench | pipedMixedWrapping100x | 1000 | 1,160,072b | 0.205ms | 1.58x
+SimpleDataWrappingBench | pipedRecursiveWrapping100x | 1000 | 1,174,456b | 0.256ms | 1.98x
 

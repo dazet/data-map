@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use DataMap\Getter\GetFiltered;
 use DataMap\Input\FilteredWrapper;
 use DataMap\Input\Input;
 use DataMap\Input\RecursiveWrapper;
@@ -19,15 +20,23 @@ final class PipelineTransformationBench
      * @Subject
      * @Groups({"pipeline transformation"})
      */
-    public function plainPhpRecursiveTransformation(): void
+    public function plainPhp(): void
     {
         $mapper = new Mapper(
             [
-                'string' => function (Input $input): string {
-                    return \strtoupper(\trim((string)$input->get('string.value')));
+                'string' => function (Input $input): ?string {
+                    $value = $input->get('string.value');
+
+                    if (is_string($value)) {
+                        return strtoupper(trim($value));
+                    }
+
+                    return null;
                 },
-                'integer' => function (Input $input): int {
-                    return (int)$input->get('integer.value');
+                'integer' => function (Input $input): ?int {
+                    $value = $input->get('integer.value');
+
+                    return is_int($value) || (is_string($value) && ctype_digit($value)) ? (int)$value : null;
                 }
             ],
             null,
@@ -41,7 +50,25 @@ final class PipelineTransformationBench
      * @Subject
      * @Groups({"pipeline transformation"})
      */
-    public function pipelineRecursiveTransformation(): void
+    public function filteredGetter(): void
+    {
+        $mapper = new Mapper(
+            [
+                'string' => GetFiltered::from('string.value')->string()->trim()->upper(),
+                'integer' => GetFiltered::from('integer.value')->int(),
+            ],
+            null,
+            RecursiveWrapper::default()
+        );
+
+        $mapper->map(['string' => ['value' => '  asdfghjkl  '], 'integer' => ['value' => '123456']]);
+    }
+
+    /**
+     * @Subject
+     * @Groups({"pipeline transformation"})
+     */
+    public function filtersPipeline(): void
     {
         $mapper = new Mapper(
             [

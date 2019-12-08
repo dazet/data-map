@@ -16,9 +16,11 @@ use DataMap\Getter\GetTranslated;
 use DataMap\Input\Input;
 use DataMap\Input\MixedWrapper;
 use DataMap\Mapper;
+use DataMap\Output\Formatter;
 use DataMap\Output\ObjectConstructor;
 use DataMap\Output\ObjectHydrator;
 use PhpSpec\ObjectBehavior;
+use spec\DataMap\Stub\StringObject;
 use spec\DataMap\Stub\UserDto;
 use spec\DataMap\Stub\UserValue;
 
@@ -743,5 +745,26 @@ final class MapperSpec extends ObjectBehavior
 
         $this->map(['number' => 1])->shouldReturn(['required_int' => 1]);
         $this->shouldThrow(\InvalidArgumentException::class)->during('map', [['number' => 'x']]);
+    }
+
+    function it_allows_to_use_json_formatter()
+    {
+        $jsonFormatter = new class implements Formatter {
+            public function format(array $output): string
+            {
+                return json_encode($output);
+            }
+        };
+
+        $this->beConstructedWith(
+            [
+                'name' => 'person.name | string',
+                'surname' => 'person.surname | string',
+            ],
+            $jsonFormatter
+        );
+
+        $this->map(['person' => ['name' => new StringObject('John'), 'surname' => new StringObject('Doe')]])
+            ->shouldReturn('{"name":"John","surname":"Doe"}');
     }
 }

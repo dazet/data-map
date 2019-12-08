@@ -33,19 +33,20 @@ final class Filters
         return $result;
     }
 
-    public function with(callable ...$filters): self
+    public function with(callable $filter): self
     {
-        return new self(...$this->filters, ...self::wrapFilters(...$filters));
+        $clone = clone $this;
+        $clone->filters[] = Filter::wrap($filter);
+
+        return $clone;
     }
 
-    public function withNullable(callable ...$filters): self
+    public function withNullable(callable $filter): self
     {
-        return new self(...$this->filters, ...self::wrapNullableFilters(...$filters));
-    }
+        $clone = clone $this;
+        $clone->filters[] = Filter::nullable($filter);
 
-    public function merge(Filters $other): self
-    {
-        return new self(...$this->filters, ...$other->filters);
+        return $clone;
     }
 
     /**
@@ -54,13 +55,5 @@ final class Filters
     private static function wrapFilters(callable ...$filters): array
     {
         return array_map([Filter::class, 'wrap'], $filters);
-    }
-
-    /**
-     * @return Filter[]
-     */
-    private static function wrapNullableFilters(callable ...$filters): array
-    {
-        return array_map([Filter::class, 'nullable'], $filters);
     }
 }

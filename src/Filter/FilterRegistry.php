@@ -2,6 +2,13 @@
 
 namespace DataMap\Filter;
 
+use DataMap\Common\ArrayUtil;
+use DataMap\Common\BooleanUtil;
+use DataMap\Common\DateUtil;
+use DataMap\Common\JsonUtil;
+use DataMap\Common\NumberUtil;
+use DataMap\Common\StringUtil;
+use DataMap\Common\VariableUtil;
 use InvalidArgumentException;
 
 final class FilterRegistry
@@ -10,41 +17,41 @@ final class FilterRegistry
     public const DEFAULT = [
         // key => [Filter callback, [Filter constructor args]]
         // types
-        'string' => ['DataMap\Common\StringUtil::toStringOrNull'],
-        'int' => ['DataMap\Common\NumberUtil::toIntOrNull'],
-        'integer' => ['DataMap\Common\NumberUtil::toIntOrNull'],
-        'float' => ['DataMap\Common\NumberUtil::toFloatOrNull'],
-        'bool' => ['DataMap\Common\BooleanUtil::toBoolOrNull'],
-        'boolean' => ['DataMap\Common\BooleanUtil::toBoolOrNull'],
-        'array' => ['DataMap\Common\ArrayUtil::toArrayOrNull'],
+        'string' => [StringUtil::toStringOrNull],
+        'int' => [NumberUtil::toIntOrNull],
+        'integer' => [NumberUtil::toIntOrNull],
+        'float' => [NumberUtil::toFloatOrNull],
+        'bool' => [BooleanUtil::toBoolOrNull],
+        'boolean' => [BooleanUtil::toBoolOrNull],
+        'array' => [ArrayUtil::toArrayOrNull],
         // strings
-        'explode' => ['explode', [',', '$$']],
-        'implode' => ['implode', [',', '$$']],
-        'upper' => ['mb_strtoupper'],
-        'lower' => ['mb_strtolower'],
-        'trim' => ['trim'],
-        'rtrim' => ['rtrim'],
-        'ltrim' => ['ltrim'],
-        'format' => ['sprintf', ['%s', '$$']],
-        'replace' => ['str_replace', ['', '', '$$']],
-        'strip_tags' => ['strip_tags'],
+        'explode' => ['\explode', [',', '$$']],
+        'implode' => ['\implode', [',', '$$']],
+        'upper' => ['\mb_strtoupper'],
+        'lower' => ['\mb_strtolower'],
+        'trim' => ['\trim'],
+        'rtrim' => ['\rtrim'],
+        'ltrim' => ['\ltrim'],
+        'format' => ['\sprintf', ['%s', '$$']],
+        'replace' => ['\str_replace', ['', '', '$$']],
+        'strip_tags' => ['\strip_tags'],
         // numbers
-        'number_format' => ['number_format', ['$$', 2, '.', '']],
-        'round' => ['round', ['$$', 0]],
-        'floor' => ['floor', ['$$']],
-        'ceil' => ['ceil', ['$$']],
+        'number_format' => ['\number_format', ['$$', 2, '.', '']],
+        'round' => ['\round', ['$$', 0]],
+        'floor' => ['\floor', ['$$']],
+        'ceil' => ['\ceil', ['$$']],
         // dates
-        'datetime' => ['DataMap\Common\DateUtil::toDatetimeOrNull'],
-        'date_format' => ['DataMap\Common\DateUtil::toDateFormatOrNull', ['$$', 'Y-m-d H:i:s']],
-        'date_modify' => ['DataMap\Common\DateUtil::dateModifyOrNull', ['$$', '+0 seconds']],
-        'timestamp' => ['DataMap\Common\DateUtil::toTimestampOrNull'],
+        'datetime' => [DateUtil::toDatetimeOrNull],
+        'date_format' => [DateUtil::toDateFormatOrNull, ['$$', 'Y-m-d H:i:s']],
+        'date_modify' => [DateUtil::dateModifyOrNull, ['$$', '+0 seconds']],
+        'timestamp' => [DateUtil::toTimestampOrNull],
         // json
-        'json_encode' => ['DataMap\Common\JsonUtil::toJsonOrNull'],
-        'json_decode' => ['DataMap\Common\JsonUtil::toArrayOrNull'],
+        'json_encode' => [JsonUtil::toJsonOrNull],
+        'json_decode' => [JsonUtil::toArrayOrNull],
         // misc
-        'count' => ['DataMap\Common\ArrayUtil::countOrNull'],
-        'if_null' => ['DataMap\Common\VariableUtil::ifNull', ['$$', null], true],
-        'if_empty' => ['DataMap\Common\VariableUtil::ifEmpty', ['$$', null], true],
+        'count' => [ArrayUtil::countOrNull],
+        'if_null' => [VariableUtil::ifNull, ['$$', null], true],
+        'if_empty' => [VariableUtil::ifEmpty, ['$$', null], true],
     ];
 
     public static function get(string $key): Filter
