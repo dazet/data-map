@@ -251,8 +251,8 @@ $mapper->map(['number' => 1]); // returns ['required_int' => 1]
 
 `GetFiltered` has set of built-in filters similar to `FilteredInput` but is a little faster, because filters don't need to be parsed from string.
 
-* **`with(callable ...$filters)`**: add to pipeline custom filter functions
-* **`withNullable(callable ...$filters)`**: add to pipeline custom filter functions that will be called even when value has become null
+* **`with(callable $filter)`**: add to pipeline custom filter functions
+* **`withNullable(callable $filter)`**: add to pipeline custom filter functions that will be called even when value has become null
 * **`string()`**: try cast to string
 * **`int()`**: try cast to int
 * **`float()`**: try cast to float
@@ -504,7 +504,7 @@ $mapper = new Mapper(
 );
 ```
 
-####💡💡💡💡💡 Implement `Input` and `Wrapper` to extract data from specific sources
+#### Implement `Input` and `Wrapper` to extract data from specific sources
 
 It is possible to define data extracting for some object type explicitly.
 
@@ -619,8 +619,10 @@ $map = [
 ];
 
 $toPerson = new Mapper($map, new PersonFormatter());
-$toPerson->map(['person' => ['name' => 'John', 'surname' => 'Doe']]); // result: new Person('John', 'Doe');
+$toPerson->map(['person' => ['name' => 'John', 'surname' => 'Doe']]); 
+// result: new Person('John', 'Doe');
 
 $toJson = new Mapper($map, new JsonFormatter());
-$toJson->map(['person' => ['name' => 'John', 'surname' => 'Doe']]); // result: {"name":"John","surname":"Doe"};
+$toJson->map(['person' => ['name' => 'John', 'surname' => 'Doe']]); 
+// result: {"name":"John","surname":"Doe"};
 ```
