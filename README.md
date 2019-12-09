@@ -91,7 +91,7 @@ There are 2 forms of defining map:
 
 ### Predefined Getters
 
-#### `new GetRaw($key, $default)`
+##### `new GetRaw($key, $default)`
 
 Get value by property path without additional transformation.
 
@@ -102,7 +102,7 @@ $mapper = new Mapper([
     'name' => 'first_name',  
 ]);
 ```
-#### `new GetString($key, $default)`
+##### `new GetString($key, $default)`
 
 Gets value and casts to string (if possible) or returns `$default`.
 
@@ -112,7 +112,7 @@ $mapper = new Mapper([
 ]);
 ```
 
-#### `new GetInteger($key, $default)`
+##### `new GetInteger($key, $default)`
 
 Gets value and casts to integer (if possible) or `$default`.
 
@@ -122,19 +122,19 @@ $mapper = new Mapper([
 ]);
 ```
 
-#### `new GetFloat($key, $default)`
+##### `new GetFloat($key, $default)`
 
 Gets value and casts to float (if possible) or `$default`. 
 
-#### `new GetBoolean($key, $default)`
+##### `new GetBoolean($key, $default)`
 
 Gets value and casts to boolean (`true`, `false`, `0`, `1`, `'0'`, `'1'`) or `$default`. 
 
-#### `new GetDate($key, $default)`
+##### `new GetDate($key, $default)`
 
 Gets value and transform to `\DateTimeImmutable` (if possible) or `$default`.
  
-#### `new GetJoinedStrings($glue, $key1, $key2, ...)`
+##### `new GetJoinedStrings($glue, $key1, $key2, ...)`
 
 Gets string value for given keys an join it using `$glue`.
 
@@ -144,7 +144,7 @@ $mapper = new Mapper([
 ]);
 ```
 
-#### `new GetMappedCollection($key, $callback)`
+##### `new GetMappedCollection($key, $callback)`
 
 Gets collection under given `$key` and maps it with `$callback` or return `[]` if entry cannot be mapped.
 
@@ -182,11 +182,11 @@ $mapper->map([
 ];
 ```
  
-#### `new GetMappedFlatCollection($key, $callback)`
+##### `new GetMappedFlatCollection($key, $callback)`
 
 Similar to `GetMappedCollection` but result is flattened.
 
-#### `new GetTranslated($key, $map, $default)`
+##### `new GetTranslated($key, $map, $default)`
 
 Gets value and translates it using provided associative array (`$map`) or `$default` when translation for value is not available.
 
@@ -200,7 +200,7 @@ $mapper->map(['agree' => 'no']) === ['agree' => false];
 $mapper->map(['agree' => 'maybe']) === ['agree' => false];
 ```
 
-#### `GetFiltered::from('key')->...`
+##### `GetFiltered::from('key')->...`
 
 Gets value and transforms it through filters pipeline.
 
@@ -249,7 +249,7 @@ $mapper->map(['number' => 'x']); // throws InvalidArgumentException
 $mapper->map(['number' => 1]); // returns ['required_int' => 1]
 ```
 
-`GetFiltered` has set of built-in filters similar to `FilteredInput` but is a little faster, because filters don't need to be parsed from string.
+`GetFiltered` has set of built-in filters similar to `FilteredInput`.
 
 * **`with(callable $filter)`**: add to pipeline custom filter functions
 * **`withNullable(callable $filter)`**: add to pipeline custom filter functions that will be called even when value has become null
