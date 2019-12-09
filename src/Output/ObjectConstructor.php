@@ -1,15 +1,24 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap\Output;
+
+use Closure;
+use InvalidArgumentException;
+use ReflectionMethod;
+use ReflectionParameter;
+use function array_map;
+use function class_exists;
+use function method_exists;
+use function sprintf;
 
 final class ObjectConstructor implements Formatter
 {
     private const CONSTRUCTOR = '__construct';
 
-    /** @var \Closure */
+    /** @var Closure */
     private $construct;
 
-    /** @var array */
+    /** @var array<string> */
     private $parameters;
 
     public function __construct(string $class, string $method = self::CONSTRUCTOR)
@@ -21,8 +30,8 @@ final class ObjectConstructor implements Formatter
             return $method === self::CONSTRUCTOR ? new $class(...$parameters) : $class::$method(...$parameters);
         };
 
-        $this->parameters = \array_map(
-            function (\ReflectionParameter $parameter): string {
+        $this->parameters = array_map(
+            function (ReflectionParameter $parameter): string {
                 return $parameter->getName();
             },
             $constructor->getParameters()
@@ -30,11 +39,11 @@ final class ObjectConstructor implements Formatter
     }
 
     /**
-     * @return object
+     * @param array<string, mixed> $output
      */
-    public function format(array $output)
+    public function format(array $output): object
     {
-        $parameters = \array_map(
+        $parameters = array_map(
             function (string $name) use ($output) {
                 return $output[$name] ?? null;
             },
@@ -46,26 +55,26 @@ final class ObjectConstructor implements Formatter
 
     private function assertClassMethodExists(string $class, string $method): void
     {
-        if (!\class_exists($class)) {
-            throw new \InvalidArgumentException(sprintf('Class `%s` does not exists.', $class));
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException(sprintf('Class `%s` does not exists.', $class));
         }
 
-        if (!\method_exists($class, $method)) {
-            throw new \InvalidArgumentException(sprintf('Class `%s` does not have method `%s`.', $class, $method));
+        if (!method_exists($class, $method)) {
+            throw new InvalidArgumentException(sprintf('Class `%s` does not have method `%s`.', $class, $method));
         }
     }
 
-    private function reflectConstructor(string $class, string $method): \ReflectionMethod
+    private function reflectConstructor(string $class, string $method): ReflectionMethod
     {
-        $constructor = new \ReflectionMethod($class, $method);
+        $constructor = new ReflectionMethod($class, $method);
 
         if (!$constructor->isPublic()) {
-            throw new \InvalidArgumentException(sprintf('Class method `%s`::`%s` is not public.', $class, $method));
+            throw new InvalidArgumentException(sprintf('Class method `%s`::`%s` is not public.', $class, $method));
         }
 
         if (!$constructor->isConstructor() && !$constructor->isStatic()) {
-            throw new \InvalidArgumentException(
-                sprintf('Class factory method `%s`::`%s` is not static.', $class, $method)
+            throw new InvalidArgumentException(
+                sprintf('Class factory method `%s`::`%s` is not valid constructor.', $class, $method)
             );
         }
 

@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap;
 
 use DataMap\Getter\GetterMap;
-use DataMap\Input\RecursiveWrapper;
+use DataMap\Input\FilteredWrapper;
 use DataMap\Input\Wrapper;
 use DataMap\Output\ArrayFormatter;
 use DataMap\Output\Formatter;
@@ -29,18 +29,18 @@ final class Mapper
     private $formatter;
 
     /**
-     * @param callable[]|string[] $map
+     * @param iterable<string, callable|string> $map
      */
-    public function __construct(array $map, ?Formatter $formatter = null, ?Wrapper $wrapper = null)
+    public function __construct(iterable $map, ?Formatter $formatter = null, ?Wrapper $wrapper = null)
     {
-        $this->map = new GetterMap($map);
-        $this->wrapper = $wrapper ?? RecursiveWrapper::default();
+        $this->map = GetterMap::fromIterable($map);
+        $this->wrapper = $wrapper ?? FilteredWrapper::default();
         $this->formatter = $formatter ?? ArrayFormatter::default();
     }
 
     /**
-     * @param mixed $input Input supported by Wrapper, by default array or plain object.
-     * @return array|mixed Output type depends on Formatter, by default associative array.
+     * @param mixed $input Input supported by Wrapper.
+     * @return mixed Output type depends on Formatter.
      */
     public function map($input)
     {
@@ -55,7 +55,8 @@ final class Mapper
     }
 
     /**
-     * @see Mapper::map
+     * @param mixed $input
+     * @return mixed
      */
     public function __invoke($input)
     {
@@ -78,11 +79,19 @@ final class Mapper
         return $clone;
     }
 
-    public function withAddedMap(array $map): self
+    public function withGetters(GetterMap $getterMap): self
     {
         $clone = clone $this;
-        $clone->map = $this->map->merge(new GetterMap($map));
+        $clone->map = $this->map->merge($getterMap);
 
         return $clone;
+    }
+
+    /**
+     * @param iterable<string, callable|string> $map
+     */
+    public function withAddedMap(iterable $map): self
+    {
+        return $this->withGetters(GetterMap::fromIterable($map));
     }
 }

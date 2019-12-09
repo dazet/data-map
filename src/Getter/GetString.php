@@ -1,7 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap\Getter;
 
+use DataMap\Common\StringUtil;
 use DataMap\Input\Input;
 
 final class GetString implements Getter
@@ -22,11 +23,6 @@ final class GetString implements Getter
     {
         $value = $input->get($this->key);
 
-        return $this->canBeString($value) ? (string)$value : $this->default;
-    }
-
-    private function canBeString($value): bool
-    {
-        return \is_scalar($value) || (\is_object($value) && \method_exists($value, '__toString'));
+        return StringUtil::toStringOrNull($value) ?? $this->default;
     }
 }

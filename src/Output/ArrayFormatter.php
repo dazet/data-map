@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap\Output;
 
@@ -11,7 +11,11 @@ final class ArrayFormatter implements Formatter
         return $self ?? $self = new self();
     }
 
-    public function format(array $output)
+    /**
+     * @param array<string, mixed> $output
+     * @return array<string, mixed>
+     */
+    public function format(array $output): array
     {
         return $output;
     }

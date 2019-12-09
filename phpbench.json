@@ -1,0 +1,20 @@
+{
+  "bootstrap": "vendor/autoload.php",
+  "path": "benchmarks",
+  "time_unit": "milliseconds",
+  "progress": "dots",
+  "reports": {
+    "basic": {
+      "extends": "default",
+      "cols": ["benchmark", "subject", "revs", "mem_peak", "time_rev", "diff"],
+      "break": ["groups"]
+    }
+  },
+  "outputs": {
+    "md": {
+      "extends": "markdown",
+      "file": "BENCHMARKS.md",
+      "title": "Benchmarks"
+    }
+  }
+}

@@ -2,19 +2,25 @@
 
 namespace spec\DataMap;
 
+use DataMap\Filter\Filter;
 use DataMap\Getter\GetBoolean;
+use DataMap\Getter\GetFiltered;
 use DataMap\Getter\GetFloat;
 use DataMap\Getter\GetInteger;
 use DataMap\Getter\GetJoinedStrings;
 use DataMap\Getter\GetMappedCollection;
 use DataMap\Getter\GetMappedFlatCollection;
 use DataMap\Getter\GetString;
+use DataMap\Getter\GetterMap;
 use DataMap\Getter\GetTranslated;
 use DataMap\Input\Input;
+use DataMap\Input\MixedWrapper;
 use DataMap\Mapper;
+use DataMap\Output\Formatter;
 use DataMap\Output\ObjectConstructor;
 use DataMap\Output\ObjectHydrator;
 use PhpSpec\ObjectBehavior;
+use spec\DataMap\Stub\StringObject;
 use spec\DataMap\Stub\UserDto;
 use spec\DataMap\Stub\UserValue;
 
@@ -481,5 +487,284 @@ final class MapperSpec extends ObjectBehavior
         ];
 
         $this->map($input)->shouldBeLike(new UserValue('c0933b83-11df-45aa-9b7e-1d2b6e4f5053', 'John Doe', 33));
+    }
+
+    function it_can_transform_result_value_through_predefined_filter_functions()
+    {
+        $data = [
+            'string_float' => '123.123',
+            'float' => 123.1234,
+            'spaced_string' => '  gimme some space     ',
+            'html_string' => '<h1>Hello world!</h1>',
+            'string_list' => 'apple,orange,banana',
+            'array_list' => ['apple', 'orange', 'banana'],
+            'true_string' => '1',
+            'true_int' => 1,
+            'false_string' => '0',
+            'false_int' => 0,
+            'date_string' => '1410-07-15 12:00',
+            'json_string' => '{"message": "Hello world!"}',
+        ];
+
+        $this->beConstructedWith([
+            'string_to_int' => 'string_float | int',
+            'string_to_integer' => 'string_float | integer',
+            'string_to_float' => 'string_float | float',
+            'string_to_true' => 'true_string | bool',
+            'string_to_false' => 'false_string | boolean',
+            'int_to_true' => 'true_int | bool',
+            'int_to_false' => 'false_int | bool',
+            'float_round' => 'float | round',
+            'float_floor' => 'float | floor',
+            'float_ceil' => 'float | ceil',
+            'date_formatted' => 'date_string | date_format "d m Y"',
+            'trim' => 'spaced_string | trim',
+            'trim_left' => 'spaced_string | ltrim',
+            'trim_right' => 'spaced_string | rtrim',
+            'trim_and_upper' => 'spaced_string | trim | upper',
+            'trim_and_replace' => 'spaced_string | trim | replace some more',
+            'trim_and_format' => 'spaced_string | trim | format "-- %s --"',
+            'strip_html' => 'html_string | strip_tags',
+            'list_explode' => 'string_list | explode ,',
+            'list_explode_to_json' => 'string_list | explode , | json_encode',
+            'list_implode' => 'array_list | implode " / "',
+            'json_decoded' => 'json_string | json_decode',
+        ]);
+
+        $this->map($data)->shouldReturn([
+            'string_to_int' => 123,
+            'string_to_integer' => 123,
+            'string_to_float' => 123.123,
+            'string_to_true' => true,
+            'string_to_false' => false,
+            'int_to_true' => true,
+            'int_to_false' => false,
+            'float_round' => 123.0,
+            'float_floor' => 123.0,
+            'float_ceil' => 124.0,
+            'date_formatted' => '15 07 1410',
+            'trim' => 'gimme some space',
+            'trim_left' => 'gimme some space     ',
+            'trim_right' => '  gimme some space',
+            'trim_and_upper' => 'GIMME SOME SPACE',
+            'trim_and_replace' => 'gimme more space',
+            'trim_and_format' => '-- gimme some space --',
+            'strip_html' => 'Hello world!',
+            'list_explode' => \explode(',', 'apple,orange,banana'),
+            'list_explode_to_json' => \json_encode(\explode(',', 'apple,orange,banana')),
+            'list_implode' => 'apple / orange / banana',
+            'json_decoded' => ['message' => 'Hello world!'],
+        ]);
+    }
+
+    function it_can_transform_result_value_through_predefined_date_filters()
+    {
+        $data = [
+            'date_string' => '1410-07-15 12:00',
+        ];
+
+        $this->beConstructedWith([
+            'date_object' => 'date_string | datetime',
+            'date_modified' => 'date_string | date_modify "+3 days"',
+        ]);
+
+        $this->map($data)->shouldBeLike([
+            'date_object' => new \DateTimeImmutable($data['date_string']),
+            'date_modified' => (new \DateTimeImmutable($data['date_string']))->modify('+3 days'),
+        ]);
+    }
+
+    function it_can_make_use_of_filtering_getter()
+    {
+        $data = [
+            'string_float' => '123.123',
+            'float' => 123.1234,
+            'spaced_string' => '  gimme some space     ',
+            'html_string' => '<h1>Hello world!</h1>',
+            'string_list' => 'apple,orange,banana',
+            'array_list' => ['apple', 'orange', 'banana'],
+            'true_string' => '1',
+            'true_int' => 1,
+            'false_string' => '0',
+            'false_int' => 0,
+            'date_string' => '1410-07-15 12:00',
+            'json_string' => '{"message": "Hello world!"}',
+        ];
+
+        $this->beConstructedWith([
+            'string_to_int' => GetFiltered::from('string_float')->int(),
+            'string_to_integer' => GetFiltered::from('string_float')->int(),
+            'string_to_float' => GetFiltered::from('string_float')->float(),
+            'string_to_true' => GetFiltered::from('true_string')->bool(),
+            'string_to_false' => GetFiltered::from('false_string')->bool(),
+            'int_to_true' => GetFiltered::from('true_int')->bool(),
+            'int_to_false' => GetFiltered::from('false_int')->bool(),
+            'float_round' => GetFiltered::from('float')->round(),
+            'float_floor' => GetFiltered::from('float')->floor(),
+            'float_ceil' => GetFiltered::from('float')->ceil(),
+            'date_formatted' => GetFiltered::from('date_string')->dateFormat('d m Y'),
+            'trim' => GetFiltered::from('spaced_string')->trim(),
+            'trim_left' => GetFiltered::from('spaced_string')->with('ltrim'),
+            'trim_right' => GetFiltered::from('spaced_string')->with('rtrim'),
+            'trim_and_upper' => GetFiltered::from('spaced_string')->trim()->upper(),
+            'trim_and_replace' => GetFiltered::from('spaced_string')->trim()->replace('some', 'more'),
+            'trim_and_format' => GetFiltered::from('spaced_string')->trim()->format('-- %s --'),
+            'strip_html' => GetFiltered::from('html_string')->stripTags(),
+            'list_explode' => GetFiltered::from('string_list')->explode(','),
+            'list_explode_to_json' => GetFiltered::from('string_list')->explode(',')->with('json_encode'),
+            'list_implode' => GetFiltered::from('array_list')->implode(' / '),
+            'json_decoded' => GetFiltered::from('json_string')->with(Filter::wrap('json_decode', ['$$', true])),
+        ]);
+
+        $this->map($data)->shouldReturn([
+            'string_to_int' => 123,
+            'string_to_integer' => 123,
+            'string_to_float' => 123.123,
+            'string_to_true' => true,
+            'string_to_false' => false,
+            'int_to_true' => true,
+            'int_to_false' => false,
+            'float_round' => 123.0,
+            'float_floor' => 123.0,
+            'float_ceil' => 124.0,
+            'date_formatted' => '15 07 1410',
+            'trim' => 'gimme some space',
+            'trim_left' => 'gimme some space     ',
+            'trim_right' => '  gimme some space',
+            'trim_and_upper' => 'GIMME SOME SPACE',
+            'trim_and_replace' => 'gimme more space',
+            'trim_and_format' => '-- gimme some space --',
+            'strip_html' => 'Hello world!',
+            'list_explode' => \explode(',', 'apple,orange,banana'),
+            'list_explode_to_json' => \json_encode(\explode(',', 'apple,orange,banana')),
+            'list_implode' => 'apple / orange / banana',
+            'json_decoded' => ['message' => 'Hello world!'],
+        ]);
+    }
+
+    function it_can_be_copied_with_different_input_wrapper()
+    {
+        $data = [
+            'nested' => [
+                'path' => 'Hello',
+            ],
+        ];
+
+        $this->beConstructedWith([
+            'nested' => 'nested.path',
+        ]);
+
+        $this->map($data)->shouldBe(['nested' => 'Hello']);
+
+        $this->withWrapper(MixedWrapper::default())->map($data)->shouldBe(['nested' => null]);
+    }
+
+    function it_can_be_copied_with_different_output_formatter()
+    {
+        $data = [
+            'key' => 'john-doe-33',
+            'name' => [
+                'first' => 'John',
+                'last' => 'Doe',
+            ],
+            'metric' => [
+                'age' => 33,
+            ]
+        ];
+
+        $this->beConstructedWith([
+            'id' => 'key',
+            'name' => 'name.first',
+            'age' => 'metric.age',
+        ]);
+
+        $this->map($data)->shouldBe(['id' => 'john-doe-33', 'name' => 'John', 'age' => 33]);
+
+        $johnDoe = new UserDto();
+        $johnDoe->id = 'john-doe-33';
+        $johnDoe->name = 'John';
+        $johnDoe->age = 33;
+
+        $this->withFormatter(new ObjectHydrator(UserDto::class))->map($data)->shouldBeLike($johnDoe);
+    }
+
+    function it_can_be_copied_with_additional_mapping()
+    {
+        $data = [
+            'key' => 'john-doe-33',
+            'name' => [
+                'first' => 'John',
+                'last' => 'Doe',
+            ],
+            'metric' => [
+                'age' => 33,
+            ]
+        ];
+
+        $this->beConstructedWith([
+            'name' => 'name.first',
+        ]);
+
+        $this->map($data)->shouldBe(['name' => 'John']);
+
+        $this->withAddedMap(['surname' => 'name.last'])
+            ->map($data)
+            ->shouldBe(['name' => 'John', 'surname' => 'Doe']);
+
+        $this->withGetters(GetterMap::fromIterable(['surname' => 'name.last']))
+            ->map($data)
+            ->shouldBe(['name' => 'John', 'surname' => 'Doe']);
+    }
+
+    function it_can_get_filtered_with_custom_filter()
+    {
+        $greeting = function (string $name): string {
+            return "Hello {$name}!";
+        };
+
+        $this->beConstructedWith([
+            'greet' => GetFiltered::from('name')->string()->with($greeting),
+        ]);
+
+        $this->map(['name' => 'John'])->shouldReturn(['greet' => 'Hello John!']);
+    }
+
+    function it_can_get_filtered_with_nullable_filter()
+    {
+        $requireInt = function ($value): int {
+            if (!is_int($value)) {
+                throw new \InvalidArgumentException('I require int!');
+            }
+
+            return $value;
+        };
+
+        $this->beConstructedWith([
+            'required_int' => GetFiltered::from('number')->int()->withNullable($requireInt),
+        ]);
+
+        $this->map(['number' => 1])->shouldReturn(['required_int' => 1]);
+        $this->shouldThrow(\InvalidArgumentException::class)->during('map', [['number' => 'x']]);
+    }
+
+    function it_allows_to_use_json_formatter()
+    {
+        $jsonFormatter = new class implements Formatter {
+            public function format(array $output): string
+            {
+                return json_encode($output);
+            }
+        };
+
+        $this->beConstructedWith(
+            [
+                'name' => 'person.name | string',
+                'surname' => 'person.surname | string',
+            ],
+            $jsonFormatter
+        );
+
+        $this->map(['person' => ['name' => new StringObject('John'), 'surname' => new StringObject('Doe')]])
+            ->shouldReturn('{"name":"John","surname":"Doe"}');
     }
 }

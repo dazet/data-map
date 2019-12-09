@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap\Input;
 
 use DataMap\Exception\FailedToWrapInput;
 
-final class RecursiveWrapper implements Wrapper
+final class RecursiveWrapper implements ExtensibleWrapper
 {
     /** @var Wrapper */
     private $inner;
@@ -16,9 +16,9 @@ final class RecursiveWrapper implements Wrapper
 
     public static function default(): self
     {
-        static $self;
+        static $default;
 
-        return $self ?? $self = new self(MixedWrapper::default());
+        return $default ?? $default = new self(MixedWrapper::default());
     }
 
     public function supportedTypes(): array
@@ -33,5 +33,13 @@ final class RecursiveWrapper implements Wrapper
     public function wrap($data): Input
     {
         return new RecursiveInput($this->inner->wrap($data), $this);
+    }
+
+    public function withWrappers(Wrapper ...$wrappers): ExtensibleWrapper
+    {
+        $clone = clone $this;
+        $clone->inner = MixedWrapper::extend($this->inner, ...$wrappers);
+
+        return $clone;
     }
 }

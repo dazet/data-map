@@ -10,11 +10,15 @@
         }
     ],
     "require": {
-        "php": ">=7.1"
+        "php": ">=7.2",
+        "ext-json": "*",
+        "ext-ctype": "*"
     },
     "require-dev": {
-        "phpspec/phpspec": "^4.0",
-        "phpstan/phpstan": "^0.9.1"
+        "phpspec/phpspec": "^6.0",
+        "phpstan/phpstan": "^0.12",
+        "phpbench/phpbench": "@dev",
+        "friends-of-phpspec/phpspec-code-coverage": "^4.3"
     },
     "autoload": {
         "psr-4": {

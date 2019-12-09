@@ -1,13 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap\Getter;
 
+use DataMap\Common\BooleanUtil;
 use DataMap\Input\Input;
 
 final class GetBoolean implements Getter
 {
-    public const TRUTH = [true, 1, '1'];
-    public const FALSEHOOD = [false, 0, '0'];
+    public const TRUTH = BooleanUtil::TRUTHS;
+    public const FALSEHOOD = BooleanUtil::FALLACY;
 
     /** @var string */
     private $key;
@@ -25,14 +26,6 @@ final class GetBoolean implements Getter
     {
         $value = $input->get($this->key);
 
-        if (\in_array($value, self::TRUTH, true)) {
-            return true;
-        }
-
-        if (\in_array($value, self::FALSEHOOD, true)) {
-            return false;
-        }
-
-        return $this->default;
+        return BooleanUtil::toBoolOrNull($value) ?? $this->default;
     }
 }

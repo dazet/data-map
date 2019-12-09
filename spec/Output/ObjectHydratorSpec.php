@@ -2,6 +2,7 @@
 
 namespace spec\DataMap\Output;
 
+use InvalidArgumentException;
 use PhpSpec\Exception\Example\FailureException;
 use PhpSpec\ObjectBehavior;
 use spec\DataMap\Stub\AnemicClass;
@@ -78,5 +79,23 @@ final class ObjectHydratorSpec extends ObjectBehavior
         $this
             ->format(['one' => 'value 1', 'two' => 'value 2', 'three' => 'value 3'])
             ->shouldBeLike(new CopyableClass('value 1', 'value 2', 'value 3'));
+    }
+
+    function it_throws_InvalidArgumentException_when_constructed_with_array()
+    {
+        $this->beConstructedWith([]);
+        $this->shouldThrow(InvalidArgumentException::class)->duringInstantiation();
+    }
+
+    function it_throws_InvalidArgumentException_when_constructed_with_null()
+    {
+        $this->beConstructedWith(null);
+        $this->shouldThrow(InvalidArgumentException::class)->duringInstantiation();
+    }
+
+    function it_throws_InvalidArgumentException_when_constructed_with_empty_string()
+    {
+        $this->beConstructedWith('');
+        $this->shouldThrow(InvalidArgumentException::class)->duringInstantiation();
     }
 }

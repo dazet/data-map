@@ -1,41 +1,72 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace DataMap\Getter;
 
 use DataMap\Exception\FailedToInitializeMapper;
+use IteratorAggregate;
+use Traversable;
+use function array_merge;
+use function is_callable;
+use function is_string;
+use function sprintf;
 
-final class GetterMap implements \IteratorAggregate
+/**
+ * @implements IteratorAggregate<string, callable>
+ */
+final class GetterMap implements IteratorAggregate
 {
     /**
      * Key => Getter association map.
-     * @var callable[] [key => callable getter, ...]
+     * @var array<string, callable> [key => callable getter, ...]
      */
     private $map = [];
 
-    public function __construct(array $map)
+    /**
+     * @param iterable<string, callable|string> $map
+     */
+    public function __construct(iterable $map)
     {
         foreach ($map as $key => $getter) {
-            $this->map[$key] = $this->callableGetter($key, $getter);
+            $this->map[$key] = $this->callableGetter((string)$key, $getter);
         }
     }
 
-    public function getIterator(): \Traversable
+    /**
+     * @param iterable<string, callable|string> $map
+     */
+    public static function fromIterable(iterable $map): self
+    {
+        if ($map instanceof self) {
+            return $map;
+        }
+
+        return new self($map);
+    }
+
+    /**
+     * @return Traversable<string, callable>
+     */
+    public function getIterator(): Traversable
     {
         yield from $this->map;
     }
 
     public function merge(self $other): self
     {
-        return new self(\array_merge($this->map, $other->map));
+        return new self(array_merge($this->map, $other->map));
     }
 
+    /**
+     * @param callable|string|mixed $getter
+     * @throws FailedToInitializeMapper
+     */
     private function callableGetter(string $key, $getter): callable
     {
-        if (\is_string($getter)) {
+        if (is_string($getter)) {
             return new GetRaw($getter);
         }
 
-        if (\is_callable($getter)) {
+        if (is_callable($getter)) {
             return $getter;
         }
 
