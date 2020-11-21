@@ -2,9 +2,12 @@
 
 namespace DataMap\Exception;
 
-final class FailedToInitializeMapper extends \RuntimeException implements MapperException
+use RuntimeException;
+use Throwable;
+
+final class FailedToInitializeMapper extends RuntimeException implements MapperException
 {
-    public function __construct(string $message, \Throwable $previous = null)
+    public function __construct(string $message, Throwable $previous = null)
     {
         parent::__construct($message, 0, $previous);
     }

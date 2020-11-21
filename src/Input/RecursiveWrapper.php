@@ -6,8 +6,7 @@ use DataMap\Exception\FailedToWrapInput;
 
 final class RecursiveWrapper implements ExtensibleWrapper
 {
-    /** @var Wrapper */
-    private $inner;
+    private Wrapper $inner;
 
     public function __construct(Wrapper $inner)
     {

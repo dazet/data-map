@@ -6,11 +6,9 @@ use DataMap\Filter\InputFilterParser;
 
 final class FilteredInput implements Input
 {
-    /** @var Input */
-    private $inner;
+    private Input $inner;
 
-    /** @var InputFilterParser */
-    private $parser;
+    private InputFilterParser $parser;
 
     public function __construct(Input $inner, InputFilterParser $parser)
     {

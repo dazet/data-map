@@ -4,11 +4,9 @@ namespace DataMap\Filter;
 
 final class InputFilter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
-    /** @var Filters */
-    private $filters;
+    private Filters $filters;
 
     public function __construct(string $key, Filter ...$filters)
     {

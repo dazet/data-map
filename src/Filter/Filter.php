@@ -2,6 +2,7 @@
 
 namespace DataMap\Filter;
 
+use Dazet\TypeUtil\NumberUtil;
 use InvalidArgumentException;
 use function array_filter;
 use function array_key_exists;
@@ -27,13 +28,11 @@ final class Filter
     private $callback;
 
     /** @var mixed[] */
-    private $args;
+    private array $args;
 
-    /** @var int */
-    private $varPosition;
+    private int $varPosition;
 
-    /** @var bool */
-    private $handleNull;
+    private bool $handleNull;
 
     /**
      * @param mixed[] $args
@@ -42,7 +41,7 @@ final class Filter
     {
         $this->callback = $callback;
         $this->args = $this->prepareArgs($args);
-        $this->varPosition = array_search(self::VARIABLE, $this->args, true);
+        $this->varPosition = NumberUtil::toIntOrNull(array_search(self::VARIABLE, $this->args, true)) ?? 0;
         $this->handleNull = $handleNull;
     }
 

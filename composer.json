@@ -6,19 +6,19 @@
     "authors": [
         {
             "name": "Damian Zaprzałek",
-            "email": "sz.p.damian@gmail.com"
+            "email": "dazet.me@gmail.com"
         }
     ],
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.4",
         "ext-json": "*",
-        "ext-ctype": "*"
+        "ext-ctype": "*",
+        "dazet/type-utils": "^0.1.1"
     },
     "require-dev": {
-        "phpspec/phpspec": "^6.0",
+        "phpspec/phpspec": "^7.0",
         "phpstan/phpstan": "^0.12",
-        "phpbench/phpbench": "@dev",
-        "friends-of-phpspec/phpspec-code-coverage": "^4.3"
+        "phpbench/phpbench": "@dev"
     },
     "autoload": {
         "psr-4": {

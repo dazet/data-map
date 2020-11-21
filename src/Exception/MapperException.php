@@ -2,6 +2,8 @@
 
 namespace DataMap\Exception;
 
-interface MapperException extends \Throwable
+use Throwable;
+
+interface MapperException extends Throwable
 {
 }

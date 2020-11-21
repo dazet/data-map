@@ -8,8 +8,7 @@ use function array_merge;
 
 final class GetMappedFlatCollection implements Getter
 {
-    /** @var GetMappedCollection */
-    private $getter;
+    private GetMappedCollection $getter;
 
     public function __construct(string $key, callable $mapper)
     {
@@ -21,6 +20,6 @@ final class GetMappedFlatCollection implements Getter
      */
     public function __invoke(Input $input): array
     {
-        return array_merge([], ...array_map('array_values', ($this->getter)($input)));
+        return array_merge(...array_map('array_values', ($this->getter)($input)));
     }
 }

@@ -12,14 +12,12 @@ use function ucfirst;
 
 final class ObjectHydrator implements Formatter
 {
-    /** @var object */
-    private $object;
+    private object $object;
 
-    /** @var ObjectInfo */
-    private $objectInfo;
+    private ObjectInfo $objectInfo;
 
     /**
-     * @param object|string $object Object to hydrate or class that can be constructed without parameters
+     * @param object|class-string $object Object to hydrate or class that can be constructed without parameters
      */
     public function __construct($object)
     {

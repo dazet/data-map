@@ -2,16 +2,14 @@
 
 namespace DataMap\Getter;
 
-use DataMap\Common\NumberUtil;
+use Dazet\TypeUtil\NumberUtil;
 use DataMap\Input\Input;
 
 final class GetFloat implements Getter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
-    /** @var float|null */
-    private $default;
+    private ?float $default;
 
     public function __construct(string $key, ?float $default = null)
     {

@@ -5,7 +5,7 @@ namespace DataMap\Getter;
 use DataMap\Exception\FailedToInitializeMapper;
 use IteratorAggregate;
 use Traversable;
-use function array_merge;
+use function array_replace;
 use function is_callable;
 use function is_string;
 use function sprintf;
@@ -19,7 +19,7 @@ final class GetterMap implements IteratorAggregate
      * Key => Getter association map.
      * @var array<string, callable> [key => callable getter, ...]
      */
-    private $map = [];
+    private array $map = [];
 
     /**
      * @param iterable<string, callable|string> $map
@@ -53,7 +53,7 @@ final class GetterMap implements IteratorAggregate
 
     public function merge(self $other): self
     {
-        return new self(array_merge($this->map, $other->map));
+        return new self(array_replace($this->map, $other->map));
     }
 
     /**

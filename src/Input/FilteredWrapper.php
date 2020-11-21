@@ -8,11 +8,9 @@ use DataMap\Filter\InputFilterParser;
 
 final class FilteredWrapper implements ExtensibleWrapper
 {
-    /** @var Wrapper */
-    private $inner;
+    private Wrapper $inner;
 
-    /** @var InputFilterParser */
-    private $parser;
+    private InputFilterParser $parser;
 
     public function __construct(Wrapper $inner, ?InputFilterParser $parser = null)
     {

@@ -7,11 +7,10 @@ use function is_scalar;
 
 final class GetTranslated implements Getter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
     /** @var array<string|int, mixed> */
-    private $map;
+    private array $map;
 
     /** @var mixed */
     private $default;

@@ -2,16 +2,16 @@
 
 namespace DataMap\Getter;
 
-use DataMap\Common\ArrayUtil;
-use DataMap\Common\BooleanUtil;
-use DataMap\Common\DateUtil;
-use DataMap\Common\NumberUtil;
-use DataMap\Common\StringUtil;
 use DataMap\Common\VariableUtil;
 use DataMap\Exception\FailedToParseGetter;
 use DataMap\Filter\Filter;
 use DataMap\Filter\Filters;
 use DataMap\Input\Input;
+use Dazet\TypeUtil\ArrayUtil;
+use Dazet\TypeUtil\BooleanUtil;
+use Dazet\TypeUtil\DateUtil;
+use Dazet\TypeUtil\NumberUtil;
+use Dazet\TypeUtil\StringUtil;
 use function explode;
 use function implode;
 use function number_format;
@@ -24,11 +24,9 @@ use function str_replace;
  */
 final class GetFiltered implements Getter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
-    /** @var Filters */
-    private $filters;
+    private Filters $filters;
 
     public function __construct(string $key, callable ...$filters)
     {

@@ -11,26 +11,19 @@ use function strtolower;
 
 final class ObjectInput implements Input
 {
-    /** @var object */
-    private $object;
+    private object $object;
 
     /** @var string[] */
-    private $getterPrefixes;
+    private array $getterPrefixes;
 
-    /** @var ObjectInfo */
-    private $objectInfo;
+    private ObjectInfo $objectInfo;
 
     /**
-     * @param object $object
      * @param string[] $getterPrefixes
      * @throws FailedToWrapInput
      */
-    public function __construct($object, array $getterPrefixes = ['', 'get', 'is'])
+    public function __construct(object $object, array $getterPrefixes = ['', 'get', 'is'])
     {
-        if (!is_object($object)) {
-            throw new FailedToWrapInput('ObjectInput can only wrap object');
-        }
-
         $this->object = $object;
         $this->getterPrefixes = $getterPrefixes;
         $this->objectInfo = new ObjectInfo($object);

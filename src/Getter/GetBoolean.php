@@ -2,19 +2,14 @@
 
 namespace DataMap\Getter;
 
-use DataMap\Common\BooleanUtil;
+use Dazet\TypeUtil\BooleanUtil;
 use DataMap\Input\Input;
 
 final class GetBoolean implements Getter
 {
-    public const TRUTH = BooleanUtil::TRUTHS;
-    public const FALSEHOOD = BooleanUtil::FALLACY;
+    private string $key;
 
-    /** @var string */
-    private $key;
-
-    /** @var bool|null */
-    private $default;
+    private ?bool $default;
 
     public function __construct(string $key, ?bool $default = null)
     {

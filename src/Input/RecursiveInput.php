@@ -9,14 +9,11 @@ use function strlen;
 
 final class RecursiveInput implements Input
 {
-    /** @var Input */
-    private $inner;
+    private Input $inner;
 
-    /** @var Wrapper */
-    private $wrapper;
+    private Wrapper $wrapper;
 
-    /** @var string */
-    private $dot;
+    private string $dot;
 
     public function __construct(Input $inner, Wrapper $wrapper, string $dot = '.')
     {
@@ -63,7 +60,7 @@ final class RecursiveInput implements Input
     }
 
     /**
-     * @return array<string|null>
+     * @return array{0: string, 1: string|null}
      */
     private function splitKey(string $key): array
     {

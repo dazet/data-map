@@ -7,7 +7,7 @@ use function array_map;
 final class Filters
 {
     /** @var Filter[] */
-    private $filters;
+    private array $filters;
 
     public function __construct(Filter ...$filters)
     {

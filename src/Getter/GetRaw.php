@@ -6,8 +6,7 @@ use DataMap\Input\Input;
 
 final class GetRaw implements Getter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
     /** @var mixed */
     private $default;

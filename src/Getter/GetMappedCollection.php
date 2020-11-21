@@ -11,8 +11,7 @@ use function iterator_to_array;
 
 final class GetMappedCollection implements Getter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
     /** @var callable */
     private $mapper;

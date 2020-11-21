@@ -2,16 +2,14 @@
 
 namespace DataMap\Getter;
 
-use DataMap\Common\NumberUtil;
+use Dazet\TypeUtil\NumberUtil;
 use DataMap\Input\Input;
 
 final class GetInteger implements Getter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
-    /** @var int|null */
-    private $default;
+    private ?int $default;
 
     public function __construct(string $key, ?int $default = null)
     {

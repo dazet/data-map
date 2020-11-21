@@ -20,18 +20,17 @@ final class InputFilterParser
     public const ARG_REPLACE = [':null' => null, ':false' => false, ':true' => true, ':[]' => []];
     public const STR_REPLACE = ['\\|' => '|'];
 
-    /** @var Filter[] array<string, Filter> [filter_function_name => Filter, ...] */
-    private $filterMap;
+    /** @var array<string, Filter> [filter_function_name => Filter, ...] */
+    private array $filterMap;
 
     /**
      * Allow any PHP function (or other callable passed as string) when filter function name is not defined.
      * In safe mode you will not be able to use `key | strval | trim` unless you strictly define these filter functions.
-     * @var bool
      */
-    private $allowFunction;
+    private bool $allowFunction;
 
     /** @var array<string, InputFilter> */
-    private $parsed = [];
+    private array $parsed = [];
 
     /**
      * @param array<string, Filter> $filterMap [filter_function_name => Filter, ...]
@@ -98,7 +97,7 @@ final class InputFilterParser
     }
 
     /**
-     * @param array<string, Filter>&Filter[] $map
+     * @param array<string, Filter> $map
      */
     private function addFilters(array $map): void
     {

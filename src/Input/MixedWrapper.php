@@ -15,8 +15,8 @@ use function strtolower;
 
 final class MixedWrapper implements ExtensibleWrapper
 {
-    /** @var Wrapper[] */
-    private $wrappers = [];
+    /** @var array<string, Wrapper> */
+    private array $wrappers = [];
 
     public function __construct(Wrapper ...$wrappers)
     {

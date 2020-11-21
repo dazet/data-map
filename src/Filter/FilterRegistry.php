@@ -2,18 +2,21 @@
 
 namespace DataMap\Filter;
 
-use DataMap\Common\ArrayUtil;
-use DataMap\Common\BooleanUtil;
-use DataMap\Common\DateUtil;
-use DataMap\Common\JsonUtil;
-use DataMap\Common\NumberUtil;
-use DataMap\Common\StringUtil;
+use Dazet\TypeUtil\ArrayUtil;
+use Dazet\TypeUtil\BooleanUtil;
+use Dazet\TypeUtil\DateUtil;
+use Dazet\TypeUtil\JsonUtil;
+use Dazet\TypeUtil\NumberUtil;
+use Dazet\TypeUtil\StringUtil;
 use DataMap\Common\VariableUtil;
 use InvalidArgumentException;
 
 final class FilterRegistry
 {
-    /** Built-in filters */
+    /**
+     * Built-in filters
+     * @var array<string, array{0: callable(mixed):mixed, 1?: array<int, mixed>, 2?: bool }>
+     */
     public const DEFAULT = [
         // key => [Filter callback, [Filter constructor args]]
         // types
@@ -60,6 +63,7 @@ final class FilterRegistry
             throw new InvalidArgumentException("Unknown filter: {$key}");
         }
 
+        /** @phpstan-ignore-next-line */
         return new Filter(...self::DEFAULT[$key]);
     }
 

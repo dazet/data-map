@@ -1,8 +1,6 @@
 language: php
 
 php:
-  - 7.2
-  - 7.3
   - 7.4
 
 install:
@@ -10,4 +8,4 @@ install:
 
 script:
   - ./bin/phpspec run
-  - ./bin/phpstan analyze -l 7 src
+  - ./bin/phpstan analyze -l 8 src

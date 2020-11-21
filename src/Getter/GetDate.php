@@ -2,21 +2,18 @@
 
 namespace DataMap\Getter;
 
-use DataMap\Common\DateUtil;
 use DataMap\Input\Input;
 use DateTimeImmutable;
 use DateTimeZone;
+use Dazet\TypeUtil\DateUtil;
 
 final class GetDate implements Getter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
-    /** @var DateTimeImmutable|null */
-    private $default;
+    private ?DateTimeImmutable $default;
 
-    /** @var DateTimeZone|null */
-    private $timeZone;
+    private ?DateTimeZone $timeZone;
 
     public function __construct(string $key, ?DateTimeImmutable $default = null, ?DateTimeZone $timeZone = null)
     {

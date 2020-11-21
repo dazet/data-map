@@ -15,25 +15,26 @@ final class ObjectConstructor implements Formatter
 {
     private const CONSTRUCTOR = '__construct';
 
-    /** @var Closure */
-    private $construct;
+    /** @var Closure(array<int, mixed>):object */
+    private Closure $construct;
 
     /** @var array<string> */
-    private $parameters;
+    private array $parameters;
 
+    /**
+     * @param class-string $class
+     */
     public function __construct(string $class, string $method = self::CONSTRUCTOR)
     {
         $this->assertClassMethodExists($class, $method);
         $constructor = $this->reflectConstructor($class, $method);
 
-        $this->construct = function (array $parameters) use ($class, $method) {
-            return $method === self::CONSTRUCTOR ? new $class(...$parameters) : $class::$method(...$parameters);
-        };
+        $this->construct = $method === self::CONSTRUCTOR
+            ? static fn(array $parameters): object => new $class(...$parameters)
+            : static fn(array $parameters): object => $class::$method(...$parameters);
 
         $this->parameters = array_map(
-            function (ReflectionParameter $parameter): string {
-                return $parameter->getName();
-            },
+            static fn(ReflectionParameter $parameter): string => $parameter->getName(),
             $constructor->getParameters()
         );
     }

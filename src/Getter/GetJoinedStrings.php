@@ -9,11 +9,10 @@ use function implode;
 
 final class GetJoinedStrings implements Getter
 {
-    /** @var string */
-    private $glue;
+    private string $glue;
 
     /** @var GetString[] */
-    private $getters;
+    private array $getters;
 
     public function __construct(string $glue, string ...$keys)
     {

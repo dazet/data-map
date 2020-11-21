@@ -12,21 +12,18 @@ final class Mapper
 {
     /**
      * Defines getter for given key of output structure.
-     * @var GetterMap
      */
-    private $map;
+    private GetterMap $map;
 
     /**
      * Wraps input structure with Input object.
-     * @var Wrapper
      */
-    private $wrapper;
+    private Wrapper $wrapper;
 
     /**
      * Formats output.
-     * @var Formatter
      */
-    private $formatter;
+    private Formatter $formatter;
 
     /**
      * @param iterable<string, callable|string> $map

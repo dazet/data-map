@@ -14,17 +14,16 @@ use function strtolower;
 
 final class ObjectInfo
 {
-    /** @var object */
-    private $object;
+    private object $object;
 
     /** @var string[] */
-    private $publicProperties;
+    private array $publicProperties;
 
     /** @var string[] */
-    private $publicMethods;
+    private array $publicMethods;
 
     /** @var ReflectionMethod[] */
-    private $publicMethodsReflection;
+    private array $publicMethodsReflection;
 
     public function __construct(object $object)
     {

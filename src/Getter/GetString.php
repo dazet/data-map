@@ -2,16 +2,14 @@
 
 namespace DataMap\Getter;
 
-use DataMap\Common\StringUtil;
+use Dazet\TypeUtil\StringUtil;
 use DataMap\Input\Input;
 
 final class GetString implements Getter
 {
-    /** @var string */
-    private $key;
+    private string $key;
 
-    /** @var string|null */
-    private $default;
+    private ?string $default;
 
     public function __construct(string $key, ?string $default = null)
     {
