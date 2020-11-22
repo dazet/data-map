@@ -10,8 +10,9 @@ use Dazet\TypeUtil\NumberUtil;
 use Dazet\TypeUtil\StringUtil;
 use DataMap\Common\VariableUtil;
 use InvalidArgumentException;
+use Psr\Container\ContainerInterface;
 
-final class FilterRegistry
+final class FilterRegistry implements ContainerInterface
 {
     /**
      * Built-in filters
@@ -57,7 +58,19 @@ final class FilterRegistry
         'if_empty' => [VariableUtil::ifEmpty, ['$$', null], true],
     ];
 
-    public static function get(string $key): Filter
+    private function __construct()
+    {
+    }
+
+    public static function instance(): self
+    {
+        static $self;
+
+        return $self ?? $self = new self();
+    }
+
+    /** @param string $key */
+    public function get($key): Filter
     {
         if (!self::has($key)) {
             throw new InvalidArgumentException("Unknown filter: {$key}");
@@ -67,7 +80,8 @@ final class FilterRegistry
         return new Filter(...self::DEFAULT[$key]);
     }
 
-    public static function has(string $key): bool
+    /** @param string $key */
+    public function has($key): bool
     {
         return isset(self::DEFAULT[$key]);
     }

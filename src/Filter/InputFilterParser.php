@@ -3,6 +3,7 @@
 namespace DataMap\Filter;
 
 use DataMap\Exception\FailedToParseGetter;
+use Psr\Container\ContainerInterface;
 use function array_map;
 use function array_shift;
 use function is_callable;
@@ -20,7 +21,10 @@ final class InputFilterParser
     public const ARG_REPLACE = [':null' => null, ':false' => false, ':true' => true, ':[]' => []];
     public const STR_REPLACE = ['\\|' => '|'];
 
-    /** @var array<string, Filter> [filter_function_name => Filter, ...] */
+    /**
+     * Private cache of resolved Filter instances
+     * @var array<string, Filter> [filter_function_name => Filter, ...]
+     */
     private array $filterMap;
 
     /**
@@ -32,13 +36,17 @@ final class InputFilterParser
     /** @var array<string, InputFilter> */
     private array $parsed = [];
 
+    /** Container of Filter instances */
+    private ContainerInterface $registry;
+
     /**
      * @param array<string, Filter> $filterMap [filter_function_name => Filter, ...]
      */
-    public function __construct(array $filterMap, bool $allowFunction = true)
+    public function __construct(array $filterMap, bool $allowFunction = true, ?ContainerInterface $registry = null)
     {
         $this->filterMap = [];
         $this->allowFunction = $allowFunction;
+        $this->registry = $registry ?? FilterRegistry::instance();
         $this->addFilters($filterMap);
     }
 
@@ -81,7 +89,7 @@ final class InputFilterParser
     }
 
     /**
-     * @param Filter[] $filters
+     * @param array<string, Filter> $filters
      */
     public function withFilters(array $filters): self
     {
@@ -125,10 +133,8 @@ final class InputFilterParser
             return $this->filterMap[$key]->withArgs($args);
         }
 
-        if (FilterRegistry::has($key)) {
-            $this->filterMap[$key] = FilterRegistry::get($key);
-
-            return $this->filterMap[$key]->withArgs($args);
+        if ($this->registry->has($key)) {
+            return $this->filterFromRegistry($key)->withArgs($args);
         }
 
         if ($this->allowFunction && is_callable($key)) {
@@ -168,5 +174,15 @@ final class InputFilterParser
             },
             $chain
         );
+    }
+
+    private function filterFromRegistry(string $key): Filter
+    {
+        $filter = $this->registry->get($key);
+        if (!$filter instanceof Filter) {
+            throw new FailedToParseGetter('Filter registry container must return Filter instance');
+        }
+
+        return $this->filterMap[$key] = $filter;
     }
 }

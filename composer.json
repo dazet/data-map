@@ -13,7 +13,8 @@
         "php": ">=7.4",
         "ext-json": "*",
         "ext-ctype": "*",
-        "dazet/type-utils": "^0.1.1"
+        "dazet/type-utils": "^0.1.1",
+        "psr/container": "^1"
     },
     "require-dev": {
         "phpspec/phpspec": "^7.0",

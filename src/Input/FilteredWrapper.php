@@ -46,7 +46,7 @@ final class FilteredWrapper implements ExtensibleWrapper
     }
 
     /**
-     * @param Filter[] $filters
+     * @param array<string, Filter> $filters
      */
     public function withFilters(array $filters): self
     {

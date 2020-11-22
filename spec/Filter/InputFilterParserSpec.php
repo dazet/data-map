@@ -4,6 +4,7 @@ namespace spec\DataMap\Filter;
 
 use DataMap\Exception\FailedToParseGetter;
 use PhpSpec\ObjectBehavior;
+use Psr\Container\ContainerInterface;
 use spec\DataMap\Stub\StringObject;
 use function md5;
 
@@ -406,7 +407,7 @@ final class InputFilterParserSpec extends ObjectBehavior
     {
         $this->beConstructedThrough('default');
 
-        $this->shouldThrow(FailedToParseGetter::class)->during('parse' , [' | string']);
+        $this->shouldThrow(FailedToParseGetter::class)->during('parse', [' | string']);
     }
 
     function it_allows_to_use_pipe_char_when_filter_definition_enclosed_in_backticks()
@@ -416,5 +417,41 @@ final class InputFilterParserSpec extends ObjectBehavior
         $this->parse('key |` trim | `| upper')
             ->transform('|hello|')
             ->shouldReturn('HELLO');
+    }
+
+    function it_can_be_created_with_custom_filter_registry()
+    {
+        $registry = new DummyFilterContainer('my_filter', 'my_filter_2');
+
+        $this->beConstructedWith([], false, $registry);
+
+        $this->parse('key | my_filter')->transform('hello')->shouldReturn('hello filtered by my_filter');
+        $this->parse('key | my_filter_2')->transform('hello')->shouldReturn('hello filtered by my_filter_2');
+    }
+
+    function it_throws_FailedToParseGetter_when_filter_not_defined_in_registry()
+    {
+        $registry = new DummyFilterContainer('my_filter', 'my_filter_2');
+
+        $this->beConstructedWith([], false, $registry);
+        $this->shouldThrow(FailedToParseGetter::class)->during('parse', ['key | something_else']);
+    }
+
+    function it_throws_FailedToParseGetter_when_container_returns_something_other_than_Filter()
+    {
+        $registry = new class implements ContainerInterface {
+            public function get($id)
+            {
+                return $id;
+            }
+
+            public function has($id): bool
+            {
+                return true;
+            }
+        };
+
+        $this->beConstructedWith([], false, $registry);
+        $this->shouldThrow(FailedToParseGetter::class)->during('parse', ['key | my_filter']);
     }
 }
