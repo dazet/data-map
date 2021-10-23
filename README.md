@@ -16,6 +16,7 @@ Library for mapping and transforming data structures.
 ##### Examples
 
 ```php
+use DataMap\Getter\GetDate;
 use DataMap\Getter\GetInteger;
 use DataMap\Mapper;
 use DataMap\Input\Input;
